@@ -11,8 +11,18 @@ out/
 *.log
 *.tmp
 .DS_Store
-Thumbs.db
+# Database runtime files
+*.db
+*.sqlite
+*.sqlite3
 
+# Office lock files
+~$*
+
+# Agent caches and scratch
+.agents/
+scratch/
+brain/
 # Secrets and local configuration
 .env
 .env.*

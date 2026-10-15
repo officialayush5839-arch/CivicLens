@@ -26,10 +26,30 @@ public class ComplaintFrame extends JFrame {
         });
 
     private final JTextArea descriptionArea = new JTextArea(6, 25);
+    private final UserSession session;
+
+    public ComplaintFrame(UserSession session) {
+        if (session == null || !session.isCitizen()) {
+            throw new SecurityException("Access Denied: Citizen role required to submit complaints.");
+        }
+        this.session = session;
+        this.userId = session.getUserId();
+        initUI();
+    }
 
     public ComplaintFrame(int userId) {
-        this.userId = userId;
+        this(resolveCitizenSession(userId));
+    }
 
+    private static UserSession resolveCitizenSession(int userId) {
+        UserSession current = UserSession.getCurrentSession();
+        if (current != null && current.isCitizen() && current.getUserId() == userId) {
+            return current;
+        }
+        return new UserSession(userId, "Citizen", "citizen" + userId + "@civiclens.gov", UserSession.Role.CITIZEN);
+    }
+
+    private void initUI() {
         setTitle("Smart Complaint System - Submit Complaint");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(550, 500);
@@ -196,34 +216,62 @@ public class ComplaintFrame extends JFrame {
             return;
         }
 
-        // Recalculate immediately before saving.
-        String priority = PriorityClassifier.classify(
-            title, description, category
-        );
+        // Recalculate explainable triage immediately before saving
+        civiclens.triage.TriageResult triage = PriorityClassifier.classifyWithExplanation(title, description, category);
+        String priority = triage.getPriorityString();
 
         String sql =
             "INSERT INTO complaints " +
-            "(user_id, title, category, description, priority) " +
-            "VALUES (?, ?, ?, ?, ?)";
+            "(user_id, title, category, description, priority, status) " +
+            "VALUES (?, ?, ?, ?, ?, 'SUBMITTED')";
 
         try (
             Connection connection = DbConnection.getConnection();
             PreparedStatement statement =
-                connection.prepareStatement(sql)
+                connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)
         ) {
             statement.setInt(1, userId);
             statement.setString(2, title);
             statement.setString(3, category);
             statement.setString(4, description);
             statement.setString(5, priority);
-
             statement.executeUpdate();
+
+            int newComplaintId = -1;
+            try (java.sql.ResultSet rs = statement.getGeneratedKeys()) {
+                if (rs.next()) {
+                    newComplaintId = rs.getInt(1);
+                }
+            }
+
+            // Initialize deterministic SLA deadlines
+            if (newComplaintId > 0) {
+                civiclens.sla.SlaEngine.initializeDeadlines(connection, newComplaintId, priority, category, java.time.Instant.now());
+                String auditDetails = "Submitted. Triage Justification: " + triage.getJustification() +
+                        (triage.getUrgencyDrivers().isEmpty() ? "" : " | Drivers: " + String.join(", ", triage.getUrgencyDrivers()));
+                civiclens.audit.AuditTrailService.logEvent(connection, newComplaintId, userId, "CITIZEN", "COMPLAINT_SUBMITTED",
+                        null, "SUBMITTED", auditDetails);
+
+                // Check for duplicate or related incidents
+                java.util.List<civiclens.similarity.DuplicateCandidate> duplicates =
+                        civiclens.similarity.DuplicateDetectionEngine.findDuplicatesInDb(connection, newComplaintId, title, description, category, 0.40);
+                if (!duplicates.isEmpty()) {
+                    System.out.println("[Triage] Detected " + duplicates.size() + " related incident candidates for Complaint #" + newComplaintId);
+                }
+            }
+
+            StringBuilder msg = new StringBuilder();
+            msg.append("Complaint #").append(newComplaintId).append(" submitted successfully!\n");
+            msg.append("Assigned Priority: ").append(priority).append(" [").append(triage.getConfidenceString()).append("]\n");
+            msg.append("Justification: ").append(triage.getJustification()).append("\n");
+            if (!triage.getUrgencyDrivers().isEmpty()) {
+                msg.append("Urgency Drivers: ").append(String.join(", ", triage.getUrgencyDrivers())).append("\n");
+            }
+            msg.append("Status: SUBMITTED");
 
             JOptionPane.showMessageDialog(
                 this,
-                "Complaint submitted successfully!\n" +
-                "Automatically assigned priority: " + priority +
-                "\nYour complaint status is PENDING."
+                msg.toString()
             );
 
             titleField.setText("");

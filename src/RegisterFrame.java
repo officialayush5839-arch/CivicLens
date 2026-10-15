@@ -13,7 +13,7 @@ public class RegisterFrame extends JFrame {
 
     public RegisterFrame() {
         setTitle("Smart Complaint System - Registration");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(420, 320);
         setLocationRelativeTo(null);
 
@@ -71,7 +71,7 @@ public class RegisterFrame extends JFrame {
 
         String sql = "INSERT INTO users " +
             "(full_name, email, password_hash, role) " +
-            "VALUES (?, ?, ?, 'USER')";
+            "VALUES (?, ?, ?, 'CITIZEN')";
 
         try (
             Connection connection = DbConnection.getConnection();

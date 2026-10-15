@@ -14,8 +14,35 @@ public class EmployeeManagementFrame extends JFrame {
             new JPasswordField(20);
     private final JPasswordField confirmPasswordField =
             new JPasswordField(20);
+    private final UserSession session;
+
+    public EmployeeManagementFrame(UserSession session) {
+        if (session == null || !session.isAdmin()) {
+            throw new SecurityException("Access Denied: Admin role required to access Employee Management.");
+        }
+        this.session = session;
+        initUI();
+    }
 
     public EmployeeManagementFrame() {
+        this(resolveAdminSession());
+    }
+
+    private static UserSession resolveAdminSession() {
+        UserSession current = UserSession.getCurrentSession();
+        if (current != null && current.isAdmin()) {
+            return current;
+        }
+        if (AppConfig.isDemoMode()) {
+            return new UserSession(1, "System Administrator", "admin@civiclens.gov", UserSession.Role.ADMIN);
+        }
+        if (current == null) {
+            throw new SecurityException("Access Denied: No authenticated Admin session found in context.");
+        }
+        throw new SecurityException("Access Denied: Admin role required to access Employee Management.");
+    }
+
+    private void initUI() {
         setTitle("Smart Complaint System - Employee Management");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(480, 350);

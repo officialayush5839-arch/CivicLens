@@ -1,0 +1,3717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CivicLens — Explainable & Accountable Complaint Resolution Platform</title>
+  <style>
+    /* ==========================================================================
+       CIVICLENS PRESENTATION STYLESHEET
+       Self-contained, pure modern CSS with glassmorphism, 3D perspective & glows
+       ========================================================================== */
+
+    :root {
+      --bg-dark: #070913;
+      --card-bg: rgba(14, 21, 37, 0.68);
+      --card-bg-elevated: rgba(20, 30, 52, 0.78);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-border-hover: rgba(56, 189, 248, 0.45);
+      --card-shadow: 0 20px 45px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      
+      --text-main: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --cyan-bright: #38bdf8;
+      --teal-bright: #2dd4bf;
+      --purple-bright: #c084fc;
+      --indigo-bright: #818cf8;
+      --emerald-bright: #34d399;
+      --rose-bright: #fb7185;
+      --amber-bright: #fbbf24;
+
+      --grad-brand: linear-gradient(135deg, #38bdf8 0%, #2dd4bf 45%, #c084fc 100%);
+      --grad-accent: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
+      --grad-danger: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+      --grad-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+      --font-mono: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', Consolas, Monaco, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+    }
+
+    /* Fixed Canvas Backgrounds */
+    #bg-gl-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #geo3d-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    #glow-orbs-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    #particles-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* Top Progress Bar */
+    #progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 1000;
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--grad-brand);
+      box-shadow: 0 0 12px var(--cyan-bright);
+      transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Floating Header Bar */
+    header.top-nav {
+      position: fixed;
+      top: 14px;
+      left: 28px;
+      right: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    .brand-pill {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(14, 21, 37, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      padding: 6px 14px;
+      border-radius: 999px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .brand-pill:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .brand-logo-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: -0.02em;
+      background: var(--grad-brand);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--teal-bright);
+      background: rgba(45, 212, 191, 0.12);
+      padding: 2px 7px;
+      border-radius: 12px;
+      border: 1px solid rgba(45, 212, 191, 0.25);
+    }
+
+    .nav-controls {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(14, 21, 37, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-family: var(--font-sans);
+      padding: 5px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .key-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      background: rgba(255,255,255,0.1);
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: var(--text-main);
+    }
+
+    /* Fixed Right Navigation Dots */
+    #nav-dots {
+      position: fixed;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      z-index: 999;
+    }
+
+    .nav-dot-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .nav-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-dot:hover {
+      background: var(--cyan-bright);
+      box-shadow: 0 0 10px var(--cyan-bright);
+      transform: scale(1.3);
+    }
+
+    .nav-dot.active {
+      height: 26px;
+      border-radius: 6px;
+      background: var(--cyan-bright);
+      border-color: var(--teal-bright);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
+    }
+
+    .nav-dot-label {
+      position: absolute;
+      right: 22px;
+      white-space: nowrap;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-main);
+      background: rgba(14, 21, 37, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--card-border);
+      padding: 4px 10px;
+      border-radius: 6px;
+      opacity: 0;
+      transform: translateX(10px);
+      pointer-events: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .nav-dot-wrapper:hover .nav-dot-label {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Main Presentation Container (Scroll Snap) */
+    #presentation-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      z-index: 2;
+    }
+
+    /* Section Structure */
+    section.slide {
+      position: relative;
+      width: 100vw;
+      min-height: 100vh;
+      height: auto;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px 6vw 60px 6vw;
+    }
+
+    .slide-inner {
+      width: 100%;
+      max-width: 1260px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Section Headers */
+    .section-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cyan-bright);
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 3.8vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      text-align: center;
+      line-height: 1.15;
+      margin-bottom: 12px;
+      background: var(--grad-brand);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .section-subtitle {
+      font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+      color: var(--text-secondary);
+      text-align: center;
+      max-width: 780px;
+      margin-bottom: 34px;
+      line-height: 1.5;
+    }
+
+    /* 3D Glass Cards */
+    .card-3d-wrap {
+      perspective: 1200px;
+    }
+
+    .glass-card {
+      position: relative;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      box-shadow: var(--card-shadow);
+      padding: 26px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      transform-style: preserve-3d;
+      will-change: transform;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    }
+
+    .glass-card:hover {
+      border-color: var(--card-border-hover);
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(56, 189, 248, 0.15);
+    }
+
+    /* Subtle Card Glare Effect */
+    .card-glare {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .glass-card:hover .card-glare {
+      opacity: 1;
+    }
+
+    /* ==========================================================================
+       SECTION 1: HERO
+       ========================================================================== */
+    #hero {
+      position: relative;
+      text-align: center;
+    }
+
+    .hero-badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .hero-badge {
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 5px 13px;
+      border-radius: 999px;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(10px);
+    }
+
+    .hero-badge span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--emerald-bright);
+      box-shadow: 0 0 8px var(--emerald-bright);
+    }
+
+    .hero-title {
+      font-size: clamp(3.2rem, 7.5vw, 6.2rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.02;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, #ffffff 10%, #38bdf8 40%, #2dd4bf 70%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 80px rgba(56, 189, 248, 0.25);
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+      font-weight: 500;
+      color: #e2e8f0;
+      letter-spacing: -0.01em;
+      margin-bottom: 12px;
+      max-width: 820px;
+    }
+
+    .hero-tagline {
+      font-size: clamp(1rem, 1.5vw, 1.25rem);
+      color: var(--teal-bright);
+      font-style: italic;
+      margin-bottom: 34px;
+      max-width: 700px;
+      opacity: 0.95;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 44px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7 0%, #0d9488 100%);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 13px 28px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 25px rgba(2, 132, 199, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(2, 132, 199, 0.6), 0 0 20px var(--cyan-bright);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 13px 26px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      color: #ffffff;
+    }
+
+    /* Hero Interactive Micro-Demo Card */
+    .hero-interactive-preview {
+      width: 100%;
+      max-width: 860px;
+      background: rgba(14, 21, 37, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 16px;
+      padding: 18px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 30px rgba(56, 189, 248, 0.1);
+      text-align: left;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 8px;
+    }
+
+    .preview-body {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 18px;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .preview-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .preview-complaint {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px 14px;
+      border-radius: 8px;
+      border-left: 3px solid var(--rose-bright);
+    }
+
+    .preview-triage-output {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .output-badge-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .priority-badge-critical {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #ffe4e6;
+      background: rgba(244, 63, 94, 0.25);
+      border: 1px solid var(--rose-bright);
+      padding: 3px 9px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .confidence-badge {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--teal-bright);
+      background: rgba(45, 212, 191, 0.12);
+      border: 1px solid rgba(45, 212, 191, 0.3);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .reasons-text {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    /* Animated Down Indicator */
+    .scroll-indicator {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .scroll-indicator:hover {
+      color: var(--cyan-bright);
+    }
+
+    .scroll-arrow {
+      width: 22px;
+      height: 22px;
+      animation: bounceDown 2s infinite ease-in-out;
+    }
+
+    @keyframes bounceDown {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(8px); }
+      60% { transform: translateY(4px); }
+    }
+
+    /* ==========================================================================
+       SECTION 2: THE PROBLEM (4 GRID CARDS)
+       ========================================================================== */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    @media (max-width: 820px) {
+      .problem-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .problem-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .problem-icon-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .problem-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: rgba(244, 63, 94, 0.12);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      color: var(--rose-bright);
+    }
+
+    .problem-card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .problem-card-desc {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+
+    .problem-metric-tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid rgba(244, 63, 94, 0.2);
+      color: #fda4af;
+      padding: 5px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+    }
+
+    /* ==========================================================================
+       SECTION 3: 5 CONNECTED CAPABILITIES (INTERACTIVE TABS & CAROUSEL)
+       ========================================================================== */
+    .capabilities-tabs-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .cap-tab-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      font-size: 0.84rem;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cap-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .cap-tab-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--cyan-bright);
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+    }
+
+    .capability-display-card {
+      width: 100%;
+      max-width: 1100px;
+      min-height: 420px;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 30px;
+      align-items: center;
+    }
+
+    @media (max-width: 900px) {
+      .capability-display-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .cap-content-col h3 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cap-content-col p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .cap-feature-bullets {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .cap-bullet {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.86rem;
+      color: #cbd5e1;
+    }
+
+    .cap-bullet svg {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      color: var(--teal-bright);
+      margin-top: 3px;
+    }
+
+    .cap-interactive-col {
+      background: rgba(9, 14, 26, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .visual-pill-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .visual-pill {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+    }
+
+    .visual-pill .val {
+      font-weight: 700;
+      color: var(--cyan-bright);
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* Live Triage 5-Axis Radar / Bar simulation */
+    .axis-bar-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .axis-bar-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+    }
+
+    .axis-bar-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .axis-bar-fill {
+      height: 100%;
+      background: var(--grad-brand);
+      border-radius: 999px;
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ==========================================================================
+       SECTION 4: ARCHITECTURE OVERVIEW (INTERACTIVE LAYERED STACK)
+       ========================================================================== */
+    .arch-stack-container {
+      width: 100%;
+      max-width: 1050px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .arch-layer-card {
+      background: rgba(14, 21, 37, 0.75);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px 22px;
+      display: grid;
+      grid-template-columns: 200px 1fr 180px;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    @media (max-width: 820px) {
+      .arch-layer-card {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+    }
+
+    .arch-layer-card:hover {
+      background: rgba(20, 31, 56, 0.9);
+      border-color: var(--cyan-bright);
+      transform: translateX(6px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 189, 248, 0.15);
+    }
+
+    .arch-layer-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #ffffff;
+    }
+
+    .arch-layer-badge {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--cyan-bright);
+    }
+
+    .arch-layer-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .arch-chip {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .arch-layer-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    @media (max-width: 820px) {
+      .arch-layer-desc {
+        text-align: left;
+      }
+    }
+
+    /* Cross-Cutting Band */
+    .cross-cutting-bar {
+      background: linear-gradient(90deg, rgba(192, 132, 252, 0.12), rgba(56, 189, 248, 0.12));
+      border: 1px dashed rgba(192, 132, 252, 0.35);
+      border-radius: 12px;
+      padding: 12px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .cross-cutting-title {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--purple-bright);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cross-cutting-items {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* ==========================================================================
+       SECTION 5: WHAT MAKES CIVICLENS DIFFERENT (COMPARISON TABLE)
+       ========================================================================== */
+    .comparison-table-wrap {
+      width: 100%;
+      max-width: 1140px;
+      overflow-x: auto;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      background: rgba(14, 21, 37, 0.7);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--card-shadow);
+    }
+
+    table.comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    table.comparison-table th {
+      padding: 14px 18px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(10, 16, 28, 0.8);
+    }
+
+    table.comparison-table th.col-feature {
+      width: 22%;
+      color: var(--text-muted);
+    }
+
+    table.comparison-table th.col-trad {
+      width: 38%;
+      color: var(--rose-bright);
+    }
+
+    table.comparison-table th.col-civic {
+      width: 40%;
+      color: var(--teal-bright);
+      background: rgba(45, 212, 191, 0.08);
+      border-left: 1px solid rgba(45, 212, 191, 0.2);
+    }
+
+    table.comparison-table td {
+      padding: 12px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+      transition: background 0.2s ease;
+    }
+
+    table.comparison-table tr:hover td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    table.comparison-table td.cell-feature {
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    table.comparison-table td.cell-trad {
+      color: var(--text-secondary);
+    }
+
+    table.comparison-table td.cell-trad .status-x {
+      color: var(--rose-bright);
+      margin-right: 6px;
+      font-weight: bold;
+    }
+
+    table.comparison-table td.cell-civic {
+      color: #e2e8f0;
+      background: rgba(45, 212, 191, 0.03);
+      border-left: 1px solid rgba(45, 212, 191, 0.15);
+      font-weight: 500;
+    }
+
+    table.comparison-table td.cell-civic .status-check {
+      color: var(--emerald-bright);
+      margin-right: 6px;
+      font-weight: bold;
+    }
+
+    /* ==========================================================================
+       SECTION 6: BENCHMARK RESULTS (MEASURED, NOT CLAIMED)
+       ========================================================================== */
+    .benchmark-hero-banner {
+      width: 100%;
+      max-width: 1100px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(16, 185, 129, 0.08));
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 14px;
+      padding: 14px 22px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .benchmark-quote {
+      font-size: 0.92rem;
+      font-style: italic;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .benchmark-tagline {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--emerald-bright);
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .stats-counters-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      width: 100%;
+      max-width: 1100px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 960px) {
+      .stats-counters-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .stats-counters-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-counter-card {
+      background: rgba(14, 21, 37, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-counter-card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+    }
+
+    .stat-counter-label {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-counter-val-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      font-family: var(--font-mono);
+      line-height: 1;
+    }
+
+    .stat-delta {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .stat-delta.positive {
+      color: var(--emerald-bright);
+      background: rgba(16, 185, 129, 0.15);
+    }
+
+    .stat-delta.zero-risk {
+      color: var(--teal-bright);
+      background: rgba(45, 212, 191, 0.15);
+    }
+
+    .stat-baseline-sub {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+    }
+
+    /* Comparison Bar Visuals */
+    .benchmark-visual-row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    @media (max-width: 860px) {
+      .benchmark-visual-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .bench-card {
+      background: rgba(14, 21, 37, 0.7);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .bench-card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-bar-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .chart-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .chart-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+    }
+
+    .chart-dual-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .dual-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+    }
+
+    .bar-tag {
+      width: 70px;
+      color: var(--text-muted);
+    }
+
+    .bar-outer {
+      flex: 1;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-inner-civic {
+      height: 100%;
+      width: 0%;
+      background: var(--grad-brand);
+      border-radius: 999px;
+      transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bar-inner-base {
+      height: 100%;
+      width: 0%;
+      background: rgba(244, 63, 94, 0.7);
+      border-radius: 999px;
+      transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bar-val {
+      width: 48px;
+      text-align: right;
+      color: #ffffff;
+    }
+
+    /* Master Suite Tier Pill List */
+    .master-tier-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tier-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+    }
+
+    .tier-item .name {
+      color: #e2e8f0;
+      font-weight: 500;
+    }
+
+    .tier-item .badge {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--emerald-bright);
+      background: rgba(16, 185, 129, 0.15);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    /* ==========================================================================
+       SECTION 7: TECH STACK (8 GRID CARDS)
+       ========================================================================== */
+    .tech-stack-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    @media (max-width: 960px) {
+      .tech-stack-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .tech-stack-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tech-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 20px;
+    }
+
+    .tech-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tech-card-icon {
+      font-size: 1.6rem;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tech-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .tech-card-role {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--cyan-bright);
+    }
+
+    .tech-card-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .tech-card-footer {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--teal-bright);
+      background: rgba(45, 212, 191, 0.08);
+      border: 1px solid rgba(45, 212, 191, 0.18);
+      padding: 4px 8px;
+      border-radius: 6px;
+      align-self: flex-start;
+    }
+
+    /* ==========================================================================
+       SECTION 8: SECURITY & PRIVACY (6 CARDS)
+       ========================================================================== */
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    @media (max-width: 900px) {
+      .security-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 580px) {
+      .security-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .security-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sec-icon-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sec-icon {
+      font-size: 1.4rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(192, 132, 252, 0.12);
+      border: 1px solid rgba(192, 132, 252, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--purple-bright);
+    }
+
+    .sec-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .sec-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .sec-badge {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--purple-bright);
+      background: rgba(192, 132, 252, 0.1);
+      border: 1px solid rgba(192, 132, 252, 0.2);
+      padding: 3px 8px;
+      border-radius: 4px;
+      align-self: flex-start;
+    }
+
+    /* ==========================================================================
+       SECTION 9: DOCUMENTATION & TESTING (2 COLUMNS)
+       ========================================================================== */
+    .doc-test-row {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      width: 100%;
+      max-width: 1140px;
+    }
+
+    @media (max-width: 880px) {
+      .doc-test-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .doc-col-card, .test-col-card {
+      background: rgba(14, 21, 37, 0.7);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .doc-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    @media (max-width: 550px) {
+      .doc-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .doc-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 9px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .doc-item:hover {
+      background: rgba(56, 189, 248, 0.1);
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .doc-item-name {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .doc-item-desc {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .test-suites-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .test-suite-row {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: border-color 0.2s ease;
+    }
+
+    .test-suite-row:hover {
+      border-color: rgba(52, 211, 153, 0.4);
+    }
+
+    .test-suite-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .check-icon-circle {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid var(--emerald-bright);
+      color: var(--emerald-bright);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: bold;
+    }
+
+    .test-suite-name {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .test-suite-sub {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .test-score-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--emerald-bright);
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    /* ==========================================================================
+       SECTION 10: CLOSING / THANK YOU
+       ========================================================================== */
+    .closing-wrap {
+      text-align: center;
+      max-width: 880px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .closing-title {
+      font-size: clamp(3rem, 6.5vw, 5.2rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      background: var(--grad-brand);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .closing-subtitle {
+      font-size: clamp(1.1rem, 2vw, 1.6rem);
+      font-weight: 600;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .closing-tagline {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 650px;
+      line-height: 1.6;
+    }
+
+    .closing-highlights-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin: 12px 0 20px 0;
+    }
+
+    .closing-pill {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 6px 14px;
+      border-radius: 999px;
+      color: #cbd5e1;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .closing-actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .team-credit-box {
+      margin-top: 24px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .heart-icon {
+      color: var(--rose-bright);
+      animation: pulseHeart 1.5s infinite;
+      display: inline-block;
+    }
+
+    @keyframes pulseHeart {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    /* Fixed Bottom Key Navigation Guide Pill */
+    .bottom-hint-pill {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(14, 21, 37, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 999;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      pointer-events: auto;
+    }
+
+    .nav-arrow-btns {
+      display: flex;
+      gap: 4px;
+    }
+
+    .nav-arrow-btn {
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: var(--text-main);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      transition: background 0.2s ease;
+    }
+
+    .nav-arrow-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* Fade-in & Slide-up Animations */
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .animate-on-scroll.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Stagger utility */
+    .stagger-1 { transition-delay: 0.1s; }
+    .stagger-2 { transition-delay: 0.2s; }
+    .stagger-3 { transition-delay: 0.3s; }
+    .stagger-4 { transition-delay: 0.4s; }
+
+    /* Custom Scrollbar for inner elements */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.2);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- WebGL Procedural Simplex Noise Shader Canvas -->
+  <canvas id="bg-gl-canvas"></canvas>
+
+  <!-- 3D Floating Wireframe Geometry Canvas -->
+  <canvas id="geo3d-canvas"></canvas>
+
+  <!-- Glowing Depth Orbs Canvas -->
+  <canvas id="glow-orbs-canvas"></canvas>
+
+  <!-- 2D Interactive Particle Constellation Canvas -->
+  <canvas id="particles-canvas"></canvas>
+
+  <!-- Scroll Progress Indicator -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+
+  <!-- Floating Header / Navigation Bar -->
+  <header class="top-nav">
+    <div class="brand-pill" onclick="scrollToSlide(0)">
+      <div class="brand-logo-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="url(#brandGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <defs>
+            <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" />
+              <stop offset="50%" stop-color="#2dd4bf" />
+              <stop offset="100%" stop-color="#c084fc" />
+            </linearGradient>
+          </defs>
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3a9 9 0 0 1 9 9"/>
+          <circle cx="12" cy="12" r="3"/>
+          <line x1="12" y1="9" x2="12" y2="3"/>
+        </svg>
+      </div>
+      <span class="brand-name">CivicLens</span>
+      <span class="brand-tag">v2.1 LTS</span>
+    </div>
+
+    <div class="nav-controls">
+      <button class="nav-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen (F)">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+        <span>Fullscreen</span>
+        <span class="key-badge">F</span>
+      </button>
+      <button class="nav-btn" onclick="scrollToSlide(5)" title="Jump directly to Benchmarks">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 20V10M12 20V4M6 20v-6"/>
+        </svg>
+        <span>100% Benchmarks</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Right Navigation Dots -->
+  <nav id="nav-dots" aria-label="Section navigation">
+    <div class="nav-dot-wrapper" onclick="scrollToSlide(0)"><span class="nav-dot-label">Hero Landing</span><div class="nav-dot active"></div></div>
+    <div class="nav-dot-wrapper" onclick="scrollToSlide(1)"><span class="nav-dot-label">The Problem</span><div class="nav-dot"></div></div>
+    <div class="nav-dot-wrapper" onclick="scrollToSlide(2)"><span class="nav-dot-label">5 Capabilities</span><div class="nav-dot"></div></div>
+    <div class="nav-dot-wrapper" onclick="scrollToSlide(3)"><span class="nav-dot-label">Architecture</span><div class="nav-dot"></div></div>
+    <div class="nav-dot-wrapper" onclick="scrollToSlide(4)"><span class="nav-dot-label">Why CivicLens</span><div class="nav-dot"></div></div>
+    <div class="nav-dot-wrapper" onclick="scrollToSlide(5)"><span class="nav-dot-label">Benchmark Results</span><div class="nav-dot"></div></div>
+    <div class="nav-dot-wrapper" onclick="scrollToSlide(6)"><span class="nav-dot-label">Tech Stack</span><div class="nav-dot"></div></div>
+    <div class="nav-dot-wrapper" onclick="scrollToSlide(7)"><span class="nav-dot-label">Security & Privacy</span><div class="nav-dot"></div></div>
+    <div class="nav-dot-wrapper" onclick="scrollToSlide(8)"><span class="nav-dot-label">Docs & Testing</span><div class="nav-dot"></div></div>
+    <div class="nav-dot-wrapper" onclick="scrollToSlide(9)"><span class="nav-dot-label">Closing</span><div class="nav-dot"></div></div>
+  </nav>
+
+  <!-- Presentation Main Container -->
+  <main id="presentation-container">
+
+    <!-- ====================================================================
+         SECTION 1: HERO LANDING
+         ==================================================================== -->
+    <section class="slide" id="slide-0">
+      <div class="slide-inner">
+        <div class="hero-badge-row animate-on-scroll">
+          <div class="hero-badge"><span class="dot"></span> Evaluated on 56 Civic Scenarios</div>
+          <div class="hero-badge">⚡ 100% Deterministic & Verifiable</div>
+          <div class="hero-badge">🛡️ Offline & Privacy-Preserving</div>
+        </div>
+
+        <h1 class="hero-title animate-on-scroll stagger-1">CivicLens</h1>
+        <h2 class="hero-subtitle animate-on-scroll stagger-2">Explainable & Accountable Complaint Resolution</h2>
+        <p class="hero-tagline animate-on-scroll stagger-3">"Where Every Decision Has a Reason. Every Action Has a Trail."</p>
+
+        <div class="hero-cta-group animate-on-scroll stagger-4">
+          <button class="btn-primary" onclick="scrollToSlide(1)">
+            <span>Explore Presentation</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <button class="btn-secondary" onclick="scrollToSlide(5)">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z"/></svg>
+            <span>View 100% Accuracy Metrics</span>
+          </button>
+        </div>
+
+        <!-- Live Triage Preview Mockup -->
+        <div class="hero-interactive-preview card-3d animate-on-scroll stagger-4">
+          <div class="preview-header">
+            <span>⚡ LIVE MULTI-DIMENSIONAL TRIAGE ENGINE IN ACTION</span>
+            <span style="color: var(--teal-bright);">RULESET v2.1 • ZERO ML DEPENDENCIES</span>
+          </div>
+          <div class="preview-body">
+            <div class="preview-complaint">
+              <strong style="color: #ffffff; display: block; margin-bottom: 4px;">Incident Ingest #CL-2026-8819:</strong>
+              "Routine inspection noted, but main transformer vault on Elm St has flooded with 3 feet of sewage and sparks are arcing near residential row houses."
+            </div>
+            <div class="preview-triage-output">
+              <div class="output-badge-row">
+                <span class="priority-badge-critical">CRITICAL RISK</span>
+                <span class="confidence-badge">CONFIDENCE: 98.4%</span>
+                <span style="font-family: var(--font-mono); font-size: 0.72rem; color: #cbd5e1;">SLA: 2.0h</span>
+              </div>
+              <div class="reasons-text">
+                <strong>Primary Urgency Drivers:</strong> Contrastive safety escalation triggered: active electrical arcing with wastewater flooding threatens structural fire and life hazard.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="scroll-indicator" onclick="scrollToSlide(1)">
+          <span>SCROLL OR USE ARROWS</span>
+          <svg class="scroll-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 2: THE PROBLEM
+         ==================================================================== -->
+    <section class="slide" id="slide-1">
+      <div class="slide-inner">
+        <div class="section-eyebrow animate-on-scroll">The Municipal Dilemma</div>
+        <h2 class="section-title animate-on-scroll">Why Traditional Systems Fail</h2>
+        <p class="section-subtitle animate-on-scroll">Citizens are left stranded in bureaucratic blind spots while operations teams drown in unlinked duplicates and silent deadline failures.</p>
+
+        <div class="problem-grid">
+          <!-- Card 1 -->
+          <div class="glass-card card-3d problem-card animate-on-scroll stagger-1">
+            <div class="card-glare"></div>
+            <div>
+              <div class="problem-icon-header">
+                <div class="problem-icon-box">🔮</div>
+                <div>
+                  <h3 class="problem-card-title">Black-Box Decisions</h3>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">Opaque Triage & Misclassification</span>
+                </div>
+              </div>
+              <p class="problem-card-desc">
+                Complaints are assigned priority through simplistic keyword heuristics or inaccessible algorithms. Citizens receive zero rationale when an electrical hazard is placed in the same queue as a park bench painting.
+              </p>
+            </div>
+            <div class="problem-metric-tag">
+              <span>⚠ Legacy Baseline: Missed 13 of 14 Life-Threatening Emergencies</span>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="glass-card card-3d problem-card animate-on-scroll stagger-2">
+            <div class="card-glare"></div>
+            <div>
+              <div class="problem-icon-header">
+                <div class="problem-icon-box">🔄</div>
+                <div>
+                  <h3 class="problem-card-title">Duplicate Chaos</h3>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">Unlinked Cascade Complaints</span>
+                </div>
+              </div>
+              <p class="problem-card-desc">
+                A single water main rupture generates 50+ panicked phone calls and app submissions. Without offline NLP clustering, municipal dispatchers deploy redundant crews or lose tracking of secondary impacts.
+              </p>
+            </div>
+            <div class="problem-metric-tag">
+              <span>⚠ Staff waste 40% of time reading redundant tickets</span>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="glass-card card-3d problem-card animate-on-scroll stagger-3">
+            <div class="card-glare"></div>
+            <div>
+              <div class="problem-icon-header">
+                <div class="problem-icon-box">⏰</div>
+                <div>
+                  <h3 class="problem-card-title">Invisible Deadlines</h3>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">Silent SLA Expirations</span>
+                </div>
+              </div>
+              <p class="problem-card-desc">
+                Deadlines are either non-existent or tracked with naive wall clocks that ignore category severity. Escalations fail silently, and server restarts drop monitoring timers without any reconciliation.
+              </p>
+            </div>
+            <div class="problem-metric-tag">
+              <span>⚠ Zero deterministic state mapping; unmonitored backlogs</span>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="glass-card card-3d problem-card animate-on-scroll stagger-4">
+            <div class="card-glare"></div>
+            <div>
+              <div class="problem-icon-header">
+                <div class="problem-icon-box">🔒</div>
+                <div>
+                  <h3 class="problem-card-title">No Audit Trail</h3>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">Vulnerable to Administrative Evasion</span>
+                </div>
+              </div>
+              <p class="problem-card-desc">
+                Status changes, overrides, and closures occur in the dark. Without immutable logging, unresolved grievances are quietly deleted or marked "Resolved" without mandatory evidence or citizen appeals.
+              </p>
+            </div>
+            <div class="problem-metric-tag">
+              <span>⚠ Disappearing records destroy public institutional trust</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 3: THE CIVICLENS SOLUTION (5 CAPABILITIES)
+         ==================================================================== -->
+    <section class="slide" id="slide-2">
+      <div class="slide-inner">
+        <div class="section-eyebrow animate-on-scroll">System Architecture & Engines</div>
+        <h2 class="section-title animate-on-scroll">Five Connected Capabilities</h2>
+        <p class="section-subtitle animate-on-scroll">A unified, explainable pipeline turning ambiguous citizen grievances into accountable municipal resolutions.</p>
+
+        <!-- Tab Selector -->
+        <div class="capabilities-tabs-row animate-on-scroll">
+          <button class="cap-tab-btn active" onclick="switchCapabilityTab(0)">
+            <span>1. Explainable Triage</span>
+          </button>
+          <button class="cap-tab-btn" onclick="switchCapabilityTab(1)">
+            <span>2. Duplicate & Incident Detection</span>
+          </button>
+          <button class="cap-tab-btn" onclick="switchCapabilityTab(2)">
+            <span>3. SLA Policy Engine</span>
+          </button>
+          <button class="cap-tab-btn" onclick="switchCapabilityTab(3)">
+            <span>4. Lifecycle State Machine</span>
+          </button>
+          <button class="cap-tab-btn" onclick="switchCapabilityTab(4)">
+            <span>5. Audit & Analytics</span>
+          </button>
+        </div>
+
+        <!-- Capability Detail Card -->
+        <div class="glass-card capability-display-card animate-on-scroll stagger-1" id="cap-display-container">
+          <div class="card-glare"></div>
+          
+          <div class="cap-content-col" id="cap-text-content">
+            <!-- Dynamically populated by switchCapabilityTab -->
+          </div>
+
+          <div class="cap-interactive-col" id="cap-visual-content">
+            <!-- Dynamically populated by switchCapabilityTab -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 4: ARCHITECTURE OVERVIEW
+         ==================================================================== -->
+    <section class="slide" id="slide-3">
+      <div class="slide-inner">
+        <div class="section-eyebrow animate-on-scroll">Engineered for Transparency</div>
+        <h2 class="section-title animate-on-scroll">Layered System Architecture</h2>
+        <p class="section-subtitle animate-on-scroll">Strict separation of presentation, security context, core deterministic logic, and dual-backend persistence.</p>
+
+        <div class="arch-stack-container">
+          
+          <!-- UI Layer -->
+          <div class="arch-layer-card animate-on-scroll stagger-1" onclick="highlightArchLayer('ui')">
+            <div class="arch-layer-name">
+              <span class="arch-layer-badge">LAYER 1</span>
+              <span>Desktop UI</span>
+            </div>
+            <div class="arch-layer-chips">
+              <span class="arch-chip">Java Swing</span>
+              <span class="arch-chip">FlatLaf 3.5.4 Modern Theme</span>
+              <span class="arch-chip">Citizen Portal</span>
+              <span class="arch-chip">Employee Queue</span>
+              <span class="arch-chip">Admin Center</span>
+            </div>
+            <div class="arch-layer-desc">Responsive, DPI-scaled desktop views</div>
+          </div>
+
+          <!-- Security Layer -->
+          <div class="arch-layer-card animate-on-scroll stagger-2" onclick="highlightArchLayer('sec')">
+            <div class="arch-layer-name">
+              <span class="arch-layer-badge" style="color: var(--purple-bright); border-color: var(--purple-bright);">LAYER 2</span>
+              <span>Security Context</span>
+            </div>
+            <div class="arch-layer-chips">
+              <span class="arch-chip">Immutable UserSession</span>
+              <span class="arch-chip">BCrypt 12-Round Hasher</span>
+              <span class="arch-chip">External AppConfig (.env)</span>
+              <span class="arch-chip">PII Isolation Guards</span>
+            </div>
+            <div class="arch-layer-desc">Context-injected RBAC validation</div>
+          </div>
+
+          <!-- Service Layer -->
+          <div class="arch-layer-card animate-on-scroll stagger-3" onclick="highlightArchLayer('service')">
+            <div class="arch-layer-name">
+              <span class="arch-layer-badge" style="color: var(--teal-bright); border-color: var(--teal-bright);">LAYER 3</span>
+              <span>Core Services</span>
+            </div>
+            <div class="arch-layer-chips">
+              <span class="arch-chip">Multi-Axis TriageEngine</span>
+              <span class="arch-chip">DuplicateDetectionService</span>
+              <span class="arch-chip">SlaPolicyService</span>
+              <span class="arch-chip">LifecycleService</span>
+              <span class="arch-chip">OutcomeAnalyticsService</span>
+            </div>
+            <div class="arch-layer-desc">100% deterministic & offline</div>
+          </div>
+
+          <!-- Persistence Layer -->
+          <div class="arch-layer-card animate-on-scroll stagger-4" onclick="highlightArchLayer('data')">
+            <div class="arch-layer-name">
+              <span class="arch-layer-badge" style="color: var(--indigo-bright); border-color: var(--indigo-bright);">LAYER 4</span>
+              <span>Persistence</span>
+            </div>
+            <div class="arch-layer-chips">
+              <span class="arch-chip">SQLite WAL Concurrency</span>
+              <span class="arch-chip">MySQL 8.x Enterprise</span>
+              <span class="arch-chip">12-Table ANSI Schema</span>
+              <span class="arch-chip">Prepared Statements</span>
+            </div>
+            <div class="arch-layer-desc">Zero-install portable dual-backend</div>
+          </div>
+
+          <!-- Cross-cutting concerns -->
+          <div class="cross-cutting-bar animate-on-scroll stagger-4">
+            <div class="cross-cutting-title">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>CROSS-CUTTING INTEGRITY</span>
+            </div>
+            <div class="cross-cutting-items">
+              <span class="arch-chip">Append-Only Audit Trail (`complaint_audit_log`)</span>
+              <span class="arch-chip">Idempotent Escalation Scanner</span>
+              <span class="arch-chip">Auditable Human Overrides</span>
+              <span class="arch-chip">Downtime Reconciliation</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 5: WHAT MAKES CIVICLENS DIFFERENT
+         ==================================================================== -->
+    <section class="slide" id="slide-4">
+      <div class="slide-inner">
+        <div class="section-eyebrow animate-on-scroll">Direct Head-to-Head Comparison</div>
+        <h2 class="section-title animate-on-scroll">Beyond Conventional Systems</h2>
+        <p class="section-subtitle animate-on-scroll">A side-by-side technical evaluation highlighting why CivicLens replaces broken heuristics with provable accountability.</p>
+
+        <div class="comparison-table-wrap animate-on-scroll stagger-1">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th class="col-feature">Architectural Dimension</th>
+                <th class="col-trad">Traditional / Legacy Systems</th>
+                <th class="col-civic">CivicLens Platform</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-feature">Priority Assignment</td>
+                <td class="cell-trad"><span class="status-x">✗</span> Manual staff triage or primitive keyword match</td>
+                <td class="cell-civic"><span class="status-check">✓</span> Multi-dimensional 5-axis scoring with human-readable reasons</td>
+              </tr>
+              <tr>
+                <td class="cell-feature">Duplicate Detection</td>
+                <td class="cell-trad"><span class="status-x">✗</span> None or manual textual search across tickets</td>
+                <td class="cell-civic"><span class="status-check">✓</span> Automated offline Jaccard + TF-IDF + Containment similarity</td>
+              </tr>
+              <tr>
+                <td class="cell-feature">Negation Handling</td>
+                <td class="cell-trad"><span class="status-x">✗</span> Not supported ("not urgent" flags as urgent)</td>
+                <td class="cell-civic"><span class="status-check">✓</span> Contrastive clause & token-window negation resolution</td>
+              </tr>
+              <tr>
+                <td class="cell-feature">SLA Tracking</td>
+                <td class="cell-trad"><span class="status-x">✗</span> None or generic wall-clock timers</td>
+                <td class="cell-civic"><span class="status-check">✓</span> Category-specific policies with 6 deterministic states</td>
+              </tr>
+              <tr>
+                <td class="cell-feature">Escalation Mechanism</td>
+                <td class="cell-trad"><span class="status-x">✗</span> Manual email dispatch or ignored</td>
+                <td class="cell-civic"><span class="status-check">✓</span> Idempotent auto-escalation with downtime catch-up reconciliation</td>
+              </tr>
+              <tr>
+                <td class="cell-feature">Audit Trail</td>
+                <td class="cell-trad"><span class="status-x">✗</span> Minimal or mutable edit records</td>
+                <td class="cell-civic"><span class="status-check">✓</span> Append-only immutable log of every state change and actor</td>
+              </tr>
+              <tr>
+                <td class="cell-feature">Citizen Appeals</td>
+                <td class="cell-trad"><span class="status-x">✗</span> Not supported; ticket closed permanently</td>
+                <td class="cell-civic"><span class="status-check">✓</span> Authenticated reopen/appeal workflow with ownership guards</td>
+              </tr>
+              <tr>
+                <td class="cell-feature">Privacy & PII</td>
+                <td class="cell-trad"><span class="status-x">✗</span> Citizen contact info exposed in operational queues</td>
+                <td class="cell-civic"><span class="status-check">✓</span> Citizen identity separated from operational maintenance queues</td>
+              </tr>
+              <tr>
+                <td class="cell-feature">AI Transparency</td>
+                <td class="cell-trad"><span class="status-x">✗</span> Opaque neural black box or fake "AI" claims</td>
+                <td class="cell-civic"><span class="status-check">✓</span> Zero black-boxes; deterministic rules with confidence labels</td>
+              </tr>
+              <tr>
+                <td class="cell-feature">Critical Safety</td>
+                <td class="cell-trad"><span class="status-x">✗</span> 13 Critical False Negatives in benchmark tests</td>
+                <td class="cell-civic"><span class="status-check">✓</span> Zero critical false negatives verified across 56 test cases</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 6: BENCHMARK RESULTS
+         ==================================================================== -->
+    <section class="slide" id="slide-5">
+      <div class="slide-inner">
+        <div class="section-eyebrow animate-on-scroll">Empirical Evaluation Suite</div>
+        <h2 class="section-title animate-on-scroll">Measured, Not Claimed</h2>
+        <p class="section-subtitle animate-on-scroll">All performance metrics were generated by executing automated test suites against OpenJDK 21 LTS with zero simulated or fabricated figures.</p>
+
+        <!-- Benchmark Quote Banner -->
+        <div class="benchmark-hero-banner animate-on-scroll stagger-1">
+          <div class="benchmark-quote">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>"Every number on this slide was measured by running actual test suites against the system."</span>
+          </div>
+          <div class="benchmark-tagline">56 SCENARIOS • 8 DOMAINS • 0 ESTIMATIONS</div>
+        </div>
+
+        <!-- 4 Primary Stat Counters -->
+        <div class="stats-counters-grid">
+          
+          <div class="stat-counter-card animate-on-scroll stagger-1">
+            <div class="stat-counter-label">Triage Accuracy</div>
+            <div class="stat-counter-val-row">
+              <span class="stat-number counter-val" data-target="100.00" data-decimals="2" data-suffix="%">33.93%</span>
+              <span class="stat-delta positive">+66.07%</span>
+            </div>
+            <div class="stat-baseline-sub">Legacy Baseline: 33.93% (19/56)</div>
+          </div>
+
+          <div class="stat-counter-card animate-on-scroll stagger-2">
+            <div class="stat-counter-label">Macro-F1 Score</div>
+            <div class="stat-counter-val-row">
+              <span class="stat-number counter-val" data-target="1.0000" data-decimals="4">0.1617</span>
+              <span class="stat-delta positive">+0.8383</span>
+            </div>
+            <div class="stat-baseline-sub">Legacy Baseline: 0.1617 F1</div>
+          </div>
+
+          <div class="stat-counter-card animate-on-scroll stagger-3">
+            <div class="stat-counter-label">Critical False Negatives</div>
+            <div class="stat-counter-val-row">
+              <span class="stat-number counter-val" data-target="0" data-decimals="0" data-prefix="" style="color: var(--teal-bright);">13</span>
+              <span class="stat-delta zero-risk">100% Risk Eliminated</span>
+            </div>
+            <div class="stat-baseline-sub">Baseline missed 13 life emergencies</div>
+          </div>
+
+          <div class="stat-counter-card animate-on-scroll stagger-4">
+            <div class="stat-counter-label">Duplicate Precision / Recall</div>
+            <div class="stat-counter-val-row">
+              <span class="stat-number counter-val" data-target="100.0" data-decimals="1" data-suffix="%">0.0%</span>
+              <span class="stat-delta positive">FPR: 0.00%</span>
+            </div>
+            <div class="stat-baseline-sub">12 test pairs verified (6 pos, 6 neg)</div>
+          </div>
+
+        </div>
+
+        <!-- Comparative Bar Visuals and Test Suite breakdown -->
+        <div class="benchmark-visual-row">
+          
+          <div class="bench-card animate-on-scroll stagger-2">
+            <div class="bench-card-title">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+              <span>Empirical Accuracy & F1 Comparison</span>
+            </div>
+            <div class="chart-bar-group">
+              
+              <div class="chart-item">
+                <div class="chart-labels">
+                  <span>OVERALL TRIAGE ACCURACY (56 TEST CASES)</span>
+                  <span style="color: var(--teal-bright);">CivicLens: 100.00%</span>
+                </div>
+                <div class="chart-dual-bar">
+                  <div class="dual-bar-row">
+                    <span class="bar-tag">CivicLens</span>
+                    <div class="bar-outer"><div class="bar-inner-civic" data-pct="100"></div></div>
+                    <span class="bar-val">100%</span>
+                  </div>
+                  <div class="dual-bar-row">
+                    <span class="bar-tag">Baseline</span>
+                    <div class="bar-outer"><div class="bar-inner-base" data-pct="33.93"></div></div>
+                    <span class="bar-val" style="color: #fda4af;">33.9%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="chart-item">
+                <div class="chart-labels">
+                  <span>MACRO-AVERAGED F1 SCORE</span>
+                  <span style="color: var(--purple-bright);">CivicLens: 1.0000</span>
+                </div>
+                <div class="chart-dual-bar">
+                  <div class="dual-bar-row">
+                    <span class="bar-tag">CivicLens</span>
+                    <div class="bar-outer"><div class="bar-inner-civic" data-pct="100"></div></div>
+                    <span class="bar-val">1.000</span>
+                  </div>
+                  <div class="dual-bar-row">
+                    <span class="bar-tag">Baseline</span>
+                    <div class="bar-outer"><div class="bar-inner-base" data-pct="16.17"></div></div>
+                    <span class="bar-val" style="color: #fda4af;">0.162</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Master Suite Verification breakdown -->
+          <div class="bench-card animate-on-scroll stagger-3">
+            <div class="bench-card-title">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Master Test Suite Tiers (16/16 Passed)</span>
+            </div>
+            <div class="master-tier-list">
+              <div class="tier-item"><span class="name">Tier 1: RBAC Context & Constructor Guards</span><span class="badge">4/4 PASSED</span></div>
+              <div class="tier-item"><span class="name">Tier 2: Multi-Axis Triage Benchmark</span><span class="badge">3/3 PASSED</span></div>
+              <div class="tier-item"><span class="name">Tier 3: Duplicate Candidate Clustering</span><span class="badge">2/2 PASSED</span></div>
+              <div class="tier-item"><span class="name">Tier 4: SLA Policy & Idempotent Escalation</span><span class="badge">2/2 PASSED</span></div>
+              <div class="tier-item"><span class="name">Tier 5: Lifecycle & Cross-User Ownership</span><span class="badge">2/2 PASSED</span></div>
+              <div class="tier-item"><span class="name">Tier 6: Outcome Analytics & Zero-Division</span><span class="badge">3/3 PASSED</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 7: TECH STACK
+         ==================================================================== -->
+    <section class="slide" id="slide-6">
+      <div class="slide-inner">
+        <div class="section-eyebrow animate-on-scroll">Production Foundation</div>
+        <h2 class="section-title animate-on-scroll">Technology Foundation</h2>
+        <p class="section-subtitle animate-on-scroll">Engineered with robust enterprise standards, zero cloud vulnerabilities, and 100% deterministic local execution.</p>
+
+        <div class="tech-stack-grid">
+          
+          <!-- Tech 1 -->
+          <div class="glass-card card-3d tech-card animate-on-scroll stagger-1">
+            <div class="card-glare"></div>
+            <div class="tech-card-header">
+              <div class="tech-card-icon">☕</div>
+              <div>
+                <div class="tech-card-title">Java 21 LTS</div>
+                <div class="tech-card-role">Core Platform</div>
+              </div>
+            </div>
+            <div class="tech-card-desc">Modern language features, high-throughput virtual threads, and enterprise-grade type safety.</div>
+            <div class="tech-card-footer">OpenJDK 21.0.11 Verified</div>
+          </div>
+
+          <!-- Tech 2 -->
+          <div class="glass-card card-3d tech-card animate-on-scroll stagger-2">
+            <div class="card-glare"></div>
+            <div class="tech-card-header">
+              <div class="tech-card-icon">🖥️</div>
+              <div>
+                <div class="tech-card-title">Swing + FlatLaf</div>
+                <div class="tech-card-role">Desktop UI 3.5.4</div>
+              </div>
+            </div>
+            <div class="tech-card-desc">Sleek dark theme, hardware-accelerated rendering, and flawless OS DPI scaling.</div>
+            <div class="tech-card-footer">Zero Web Latency</div>
+          </div>
+
+          <!-- Tech 3 -->
+          <div class="glass-card card-3d tech-card animate-on-scroll stagger-3">
+            <div class="card-glare"></div>
+            <div class="tech-card-header">
+              <div class="tech-card-icon">🗄️</div>
+              <div>
+                <div class="tech-card-title">SQLite / MySQL</div>
+                <div class="tech-card-role">Dual Persistence</div>
+              </div>
+            </div>
+            <div class="tech-card-desc">Zero-install portable SQLite with WAL concurrency plus enterprise MySQL 8.x support.</div>
+            <div class="tech-card-footer">12-Table ANSI Schema</div>
+          </div>
+
+          <!-- Tech 4 -->
+          <div class="glass-card card-3d tech-card animate-on-scroll stagger-4">
+            <div class="card-glare"></div>
+            <div class="tech-card-header">
+              <div class="tech-card-icon">📊</div>
+              <div>
+                <div class="tech-card-title">JFreeChart 1.5.6</div>
+                <div class="tech-card-role">Analytics Graphics</div>
+              </div>
+            </div>
+            <div class="tech-card-desc">High-resolution vector chart rendering for SLA compliance and department caseload.</div>
+            <div class="tech-card-footer">Offline Vector Charts</div>
+          </div>
+
+          <!-- Tech 5 -->
+          <div class="glass-card card-3d tech-card animate-on-scroll stagger-1">
+            <div class="card-glare"></div>
+            <div class="tech-card-header">
+              <div class="tech-card-icon">🔐</div>
+              <div>
+                <div class="tech-card-title">BCrypt Hasher</div>
+                <div class="tech-card-role">Security (jbcrypt 0.4)</div>
+              </div>
+            </div>
+            <div class="tech-card-desc">12-round salted password hashing resistant to rainbow tables and brute-force attacks.</div>
+            <div class="tech-card-footer">Industry-Standard Auth</div>
+          </div>
+
+          <!-- Tech 6 -->
+          <div class="glass-card card-3d tech-card animate-on-scroll stagger-2">
+            <div class="card-glare"></div>
+            <div class="tech-card-header">
+              <div class="tech-card-icon">🧠</div>
+              <div>
+                <div class="tech-card-title">Pure Java NLP</div>
+                <div class="tech-card-role">Custom Text Engine</div>
+              </div>
+            </div>
+            <div class="tech-card-desc">Custom tokenization, stemming, TF-IDF cosine similarity, and n-gram containment.</div>
+            <div class="tech-card-footer">Sub-Millisecond Speed</div>
+          </div>
+
+          <!-- Tech 7 -->
+          <div class="glass-card card-3d tech-card animate-on-scroll stagger-3">
+            <div class="card-glare"></div>
+            <div class="tech-card-header">
+              <div class="tech-card-icon">🛡️</div>
+              <div>
+                <div class="tech-card-title">No Cloud APIs</div>
+                <div class="tech-card-role">Privacy Air-Gap</div>
+              </div>
+            </div>
+            <div class="tech-card-desc">No external cloud dependencies or data leaks. 100% operational on isolated municipal intranets.</div>
+            <div class="tech-card-footer">Zero Third-Party Leaks</div>
+          </div>
+
+          <!-- Tech 8 -->
+          <div class="glass-card card-3d tech-card animate-on-scroll stagger-4">
+            <div class="card-glare"></div>
+            <div class="tech-card-header">
+              <div class="tech-card-icon">⚙️</div>
+              <div>
+                <div class="tech-card-title">No ML Black-Box</div>
+                <div class="tech-card-role">Reproducible Rules</div>
+              </div>
+            </div>
+            <div class="tech-card-desc">Deterministic, explainable rule trees that produce auditable, legally defensible decisions.</div>
+            <div class="tech-card-footer">Zero Hallucinations</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 8: SECURITY & PRIVACY
+         ==================================================================== -->
+    <section class="slide" id="slide-7">
+      <div class="slide-inner">
+        <div class="section-eyebrow animate-on-scroll">Zero-Trust by Architecture</div>
+        <h2 class="section-title animate-on-scroll">Security by Design</h2>
+        <p class="section-subtitle animate-on-scroll">Comprehensive defenses protecting citizen identities, ensuring operational integrity, and guaranteeing auditability.</p>
+
+        <div class="security-grid">
+          
+          <div class="glass-card card-3d security-card animate-on-scroll stagger-1">
+            <div class="card-glare"></div>
+            <div class="sec-icon-title-row">
+              <div class="sec-icon">🛡️</div>
+              <div>
+                <div class="sec-title">Role-Based Access</div>
+                <span class="sec-badge">Admin • Employee • Citizen</span>
+              </div>
+            </div>
+            <p class="sec-desc">Constructor-enforced `UserSession` prevents role spoofing. Citizen routes cannot access administrative or employee modification handlers.</p>
+          </div>
+
+          <div class="glass-card card-3d security-card animate-on-scroll stagger-2">
+            <div class="card-glare"></div>
+            <div class="sec-icon-title-row">
+              <div class="sec-icon">🔐</div>
+              <div>
+                <div class="sec-title">BCrypt 12-Round Salt</div>
+                <span class="sec-badge">Slow-Hashing Protection</span>
+              </div>
+            </div>
+            <p class="sec-desc">All passwords are salted and hashed with 12 iterative rounds. Protects against offline rainbow table attacks and credential harvesting.</p>
+          </div>
+
+          <div class="glass-card card-3d security-card animate-on-scroll stagger-3">
+            <div class="card-glare"></div>
+            <div class="sec-icon-title-row">
+              <div class="sec-icon">🚫</div>
+              <div>
+                <div class="sec-title">Zero Hardcoded Keys</div>
+                <span class="sec-badge">External Configuration</span>
+              </div>
+            </div>
+            <p class="sec-desc">Secrets and database connection parameters are externalized in `.env` with fallback to `config.properties`. Excluded from version control.</p>
+          </div>
+
+          <div class="glass-card card-3d security-card animate-on-scroll stagger-4">
+            <div class="card-glare"></div>
+            <div class="sec-icon-title-row">
+              <div class="sec-icon">📝</div>
+              <div>
+                <div class="sec-title">Prepared Statements</div>
+                <span class="sec-badge">100% Parameterized SQL</span>
+              </div>
+            </div>
+            <p class="sec-desc">Zero string concatenation in queries across all 12 tables. Completely neutralizes SQL injection vulnerabilities in SQLite and MySQL.</p>
+          </div>
+
+          <div class="glass-card card-3d security-card animate-on-scroll stagger-1">
+            <div class="card-glare"></div>
+            <div class="sec-icon-title-row">
+              <div class="sec-icon">👤</div>
+              <div>
+                <div class="sec-title">Ownership Guards</div>
+                <span class="sec-badge">Cryptographic Isolation</span>
+              </div>
+            </div>
+            <p class="sec-desc">Complainants can only read, track, or appeal complaints tied to their authenticated citizen ID. Cross-user modification attempts are strictly blocked.</p>
+          </div>
+
+          <div class="glass-card card-3d security-card animate-on-scroll stagger-2">
+            <div class="card-glare"></div>
+            <div class="sec-icon-title-row">
+              <div class="sec-icon">🔍</div>
+              <div>
+                <div class="sec-title">Separated Notes & PII</div>
+                <span class="sec-badge">Quarantined Staff Views</span>
+              </div>
+            </div>
+            <p class="sec-desc">Citizen contact details are redacted from public audit records. Staff internal investigation remarks remain strictly partitioned from citizen portals.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 9: DOCUMENTATION & TESTING
+         ==================================================================== -->
+    <section class="slide" id="slide-8">
+      <div class="slide-inner">
+        <div class="section-eyebrow animate-on-scroll">Verifiable Engineering Quality</div>
+        <h2 class="section-title animate-on-scroll">Production-Ready Quality</h2>
+        <p class="section-subtitle animate-on-scroll">A complete body of architectural documentation coupled with exhaustive, automated integration test suites.</p>
+
+        <div class="doc-test-row">
+          
+          <!-- Documentation List (10 Docs) -->
+          <div class="doc-col-card animate-on-scroll stagger-1">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h3 style="font-size: 1.05rem; font-weight: 700; color: #ffffff;">10 Architectural Specifications</h3>
+              <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--cyan-bright); background: rgba(56, 189, 248, 0.12); padding: 2px 8px; border-radius: 4px;">docs/</span>
+            </div>
+            
+            <div class="doc-list">
+              <div class="doc-item">
+                <span class="doc-item-name">📄 ARCHITECTURE.md</span>
+                <span class="doc-item-desc">Layered diagrams, event flow, and component contracts</span>
+              </div>
+              <div class="doc-item">
+                <span class="doc-item-name">📄 DATABASE_DESIGN.md</span>
+                <span class="doc-item-desc">12-table ANSI portable schema, indices & constraints</span>
+              </div>
+              <div class="doc-item">
+                <span class="doc-item-name">📄 EVALUATION_METHODOLOGY.md</span>
+                <span class="doc-item-desc">Ground-truth labeling protocol across 56 civic scenarios</span>
+              </div>
+              <div class="doc-item">
+                <span class="doc-item-name">📄 EVALUATION_RESULTS.md</span>
+                <span class="doc-item-desc">Empirical accuracy, macro-F1, and contingency matrices</span>
+              </div>
+              <div class="doc-item">
+                <span class="doc-item-name">📄 FEATURE_GAP_ANALYSIS.md</span>
+                <span class="doc-item-desc">Legacy code audit vs modernized feature parity</span>
+              </div>
+              <div class="doc-item">
+                <span class="doc-item-name">📄 IMPLEMENTATION_PLAN.md</span>
+                <span class="doc-item-desc">Refactoring milestones and verification gates</span>
+              </div>
+              <div class="doc-item">
+                <span class="doc-item-name">📄 INITIAL_AUDIT.md</span>
+                <span class="doc-item-desc">Static analysis and baseline architectural vulnerabilities</span>
+              </div>
+              <div class="doc-item">
+                <span class="doc-item-name">📄 LIMITATIONS.md</span>
+                <span class="doc-item-desc">Operational boundaries and explicit trade-off analyses</span>
+              </div>
+              <div class="doc-item">
+                <span class="doc-item-name">📄 REPRODUCIBILITY.md</span>
+                <span class="doc-item-desc">Exact OpenJDK commands to reproduce every benchmark</span>
+              </div>
+              <div class="doc-item">
+                <span class="doc-item-name">📄 SECURITY_REVIEW.md</span>
+                <span class="doc-item-desc">Threat models, RBAC validation, and SQLi proof</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Automated Test Suite Verification -->
+          <div class="test-col-card animate-on-scroll stagger-2">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h3 style="font-size: 1.05rem; font-weight: 700; color: #ffffff;">Automated Test Verification</h3>
+              <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--emerald-bright); background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 4px;">ALL TESTS PASSED</span>
+            </div>
+
+            <div class="test-suites-list">
+              <div class="test-suite-row">
+                <div class="test-suite-info">
+                  <div class="check-icon-circle">✓</div>
+                  <div>
+                    <div class="test-suite-name">CivicLensMasterTestSuite</div>
+                    <div class="test-suite-sub">6 Architecture Tiers Verification</div>
+                  </div>
+                </div>
+                <div class="test-score-badge">16/16 PASSED</div>
+              </div>
+
+              <div class="test-suite-row">
+                <div class="test-suite-info">
+                  <div class="check-icon-circle">✓</div>
+                  <div>
+                    <div class="test-suite-name">SyntheticBenchmarkRunner</div>
+                    <div class="test-suite-sub">56 Scenarios Across 8 Civic Domains</div>
+                  </div>
+                </div>
+                <div class="test-score-badge">100.0% ACCURACY</div>
+              </div>
+
+              <div class="test-suite-row">
+                <div class="test-suite-info">
+                  <div class="check-icon-circle">✓</div>
+                  <div>
+                    <div class="test-suite-name">SlaEngineIntegrationTest</div>
+                    <div class="test-suite-sub">Idempotent Escalation & State Mapping</div>
+                  </div>
+                </div>
+                <div class="test-score-badge">19/19 PASSED</div>
+              </div>
+
+              <div class="test-suite-row">
+                <div class="test-suite-info">
+                  <div class="check-icon-circle">✓</div>
+                  <div>
+                    <div class="test-suite-name">LifecycleIntegrationTest</div>
+                    <div class="test-suite-sub">7-State Machine & Appeals Workflow</div>
+                  </div>
+                </div>
+                <div class="test-score-badge">17/17 PASSED</div>
+              </div>
+
+              <div class="test-suite-row">
+                <div class="test-suite-info">
+                  <div class="check-icon-circle">✓</div>
+                  <div>
+                    <div class="test-suite-name">DuplicateDetectionBenchmarkTest</div>
+                    <div class="test-suite-sub">Jaccard + TF-IDF Overlap Verification</div>
+                  </div>
+                </div>
+                <div class="test-score-badge">12/12 PAIRS OK</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 10: CLOSING / THANK YOU
+         ==================================================================== -->
+    <section class="slide" id="slide-9">
+      <div class="slide-inner">
+        <div class="closing-wrap animate-on-scroll">
+          <div class="section-eyebrow" style="margin-bottom: 8px;">Evaluation Panel Presentation</div>
+          <h1 class="closing-title">CivicLens</h1>
+          <h2 class="closing-subtitle">Explainable. Accountable. Privacy-Aware.</h2>
+          <p class="closing-tagline">"Making municipal complaint resolution transparent, fair, and trustworthy — through explainable multi-axis triage, deterministic SLAs, and an immutable audit trail."</p>
+
+          <div class="closing-highlights-row">
+            <div class="closing-pill">✨ 100% Empirical Triage Accuracy</div>
+            <div class="closing-pill">🛡️ Zero Critical False Negatives</div>
+            <div class="closing-pill">🔒 100% Offline Privacy Guarantee</div>
+            <div class="closing-pill">⚖️ Legally Verifiable Audit Logs</div>
+          </div>
+
+          <div class="closing-actions-row">
+            <button class="btn-primary" onclick="scrollToSlide(0)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12h18M3 12l6-6M3 12l6 6"/></svg>
+              <span>Restart Presentation</span>
+            </button>
+            <button class="btn-secondary" onclick="scrollToSlide(5)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+              <span>Inspect Benchmarks</span>
+            </button>
+            <button class="btn-secondary" onclick="toggleFullscreen()">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+              <span>Toggle Fullscreen</span>
+            </button>
+          </div>
+
+          <div class="team-credit-box">
+            <span>Built with <span class="heart-icon">♥</span> by Team CivicLens</span>
+            <span>•</span>
+            <span>Evaluated for Academic & Municipal Excellence</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Floating Navigation Control Hint -->
+  <div class="bottom-hint-pill">
+    <span>Navigate:</span>
+    <span class="key-badge">↑</span>
+    <span class="key-badge">↓</span>
+    <span>or</span>
+    <span class="key-badge">Space</span>
+    <div class="nav-arrow-btns">
+      <button class="nav-arrow-btn" onclick="prevSlide()" title="Previous Slide">▲</button>
+      <button class="nav-arrow-btn" onclick="nextSlide()" title="Next Slide">▼</button>
+    </div>
+    <span style="color: var(--text-muted); font-size: 0.7rem;" id="slide-num-pill">1 / 10</span>
+  </div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT IMPLEMENTATION (ALL INLINED)
+       - WebGL Procedural Simplex Noise Fragment Shader
+       - 2D Constellation Particle Physics
+       - 3D Card Tilt Mouse Tracker
+       - Intersection Observer Animations & Stat Counters
+       - Interactive Capability Switcher
+       - Keyboard & Scroll Snap Handlers
+       ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       1. WEBGL PROCEDURAL SIMPLEX NOISE GRADIENT BACKGROUND
+       ========================================================================== */
+    (function initWebGL() {
+      const canvas = document.getElementById('bg-gl-canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      
+      if (!gl) {
+        console.warn('WebGL not supported, falling back to CSS styling.');
+        return;
+      }
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      const vsSource = `
+        attribute vec2 position;
+        void main() {
+          gl_Position = vec4(position, 0.0, 1.0);
+        }
+      `;
+
+      const fsSource = `
+        precision highp float;
+        uniform vec2 u_resolution;
+        uniform float u_time;
+        uniform vec2 u_mouse;
+
+        // Simplex 2D noise implementation
+        vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
+
+        float snoise(vec2 v){
+          const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                   -0.577350269189626, 0.024390243902439);
+          vec2 i  = floor(v + dot(v, C.yy) );
+          vec2 x0 = v -   i + dot(i, C.xx);
+          vec2 i1;
+          i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+          vec4 x12 = x0.xyxy + C.xxzz;
+          x12.xy -= i1;
+          i = mod(i, 289.0);
+          vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
+          + i.x + vec3(0.0, i1.x, 1.0 ));
+          vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy),
+            dot(x12.zw,x12.zw)), 0.0);
+          m = m*m ;
+          m = m*m ;
+          vec3 x = 2.0 * fract(p * C.www) - 1.0;
+          vec3 h = abs(x) - 0.5;
+          vec3 ox = floor(x + 0.5);
+          vec3 a0 = x - ox;
+          m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+          vec3 g;
+          g.x  = a0.x  * x0.x  + h.x  * x0.y;
+          g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+          return 130.0 * dot(m, g);
+        }
+
+        void main() {
+          vec2 st = gl_FragCoord.xy / u_resolution.xy;
+          st.x *= u_resolution.x / u_resolution.y;
+
+          float t = u_time * 0.045;
+
+          // 3-Octave Procedural Simplex Flow
+          float n1 = snoise(st * 1.35 + vec2(t * 0.3, t * 0.2));
+          float n2 = snoise(st * 2.7 - vec2(t * 0.35, t * 0.45) + vec2(n1 * 0.4));
+          float n3 = snoise(st * 5.2 + vec2(t * 0.2, -t * 0.3) + vec2(n2 * 0.25));
+
+          float finalNoise = (n1 * 0.55 + n2 * 0.30 + n3 * 0.15) * 0.5 + 0.5;
+
+          // Deep, professional dark theme palette (Navy, Indigo, Deep Teal, Subtle Cyan/Violet)
+          vec3 c_deep = vec3(0.027, 0.035, 0.075);       // Deepest space #070913
+          vec3 c_purple = vec3(0.094, 0.059, 0.180);     // Deep midnight purple
+          vec3 c_teal = vec3(0.020, 0.145, 0.215);       // Deep civic teal
+          vec3 c_cyan_glow = vec3(0.05, 0.65, 0.85);     // Glowing cyan highlight
+          vec3 c_violet_glow = vec3(0.65, 0.35, 0.95);   // Luminous violet highlight
+
+          vec3 col = mix(c_deep, c_purple, smoothstep(0.18, 0.65, finalNoise));
+          col = mix(col, c_teal, smoothstep(0.40, 0.82, n2 * 0.5 + 0.5));
+
+          // Soft luminous filament accents
+          float filament1 = smoothstep(0.70, 0.88, finalNoise);
+          col += c_cyan_glow * filament1 * 0.18;
+
+          float filament2 = smoothstep(0.66, 0.84, n1 * 0.5 + 0.5);
+          col += c_violet_glow * filament2 * 0.12;
+
+          // Vignette around screen edges
+          vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+          float vig = uv.x * uv.y * (1.0 - uv.x) * (1.0 - uv.y);
+          vig = clamp(pow(16.0 * vig, 0.38), 0.0, 1.0);
+          col *= (vig * 0.82 + 0.18);
+
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `;
+
+      function createShader(gl, type, source) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          console.error(gl.getShaderInfoLog(shader));
+          gl.deleteShader(shader);
+          return null;
+        }
+        return shader;
+      }
+
+      const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource);
+      const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+      const program = gl.createProgram();
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error(gl.getProgramInfoLog(program));
+        return;
+      }
+
+      const positionBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      const positions = new Float32Array([
+        -1.0, -1.0,
+         1.0, -1.0,
+        -1.0,  1.0,
+        -1.0,  1.0,
+         1.0, -1.0,
+         1.0,  1.0,
+      ]);
+      gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+      const positionLocation = gl.getAttribLocation(program, 'position');
+      const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+      const timeLocation = gl.getUniformLocation(program, 'u_time');
+      const mouseLocation = gl.getUniformLocation(program, 'u_mouse');
+
+      let mouseX = 0.5;
+      let mouseY = 0.5;
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = window.innerHeight - e.clientY;
+      });
+
+      let startTime = performance.now();
+      function render() {
+        const currentTime = (performance.now() - startTime) * 0.001;
+        gl.useProgram(program);
+
+        gl.enableVertexAttribArray(positionLocation);
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+        gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+        gl.uniform1f(timeLocation, currentTime);
+        gl.uniform2f(mouseLocation, mouseX, mouseY);
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        requestAnimationFrame(render);
+      }
+      requestAnimationFrame(render);
+    })();
+
+    /* ==========================================================================
+       1b. FLOATING 3D WIREFRAME GEOMETRY
+       Renders rotating polyhedra (icosahedrons, cubes, octahedrons, diamonds)
+       with perspective projection and depth-based glow effects.
+       ========================================================================== */
+    (function initGeo3D() {
+      const canvas = document.getElementById('geo3d-canvas');
+      const ctx = canvas.getContext('2d');
+      let W, H;
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      // 3D math helpers
+      function rotateX(p, a) {
+        const c = Math.cos(a), s = Math.sin(a);
+        return [p[0], p[1]*c - p[2]*s, p[1]*s + p[2]*c];
+      }
+      function rotateY(p, a) {
+        const c = Math.cos(a), s = Math.sin(a);
+        return [p[0]*c + p[2]*s, p[1], -p[0]*s + p[2]*c];
+      }
+      function rotateZ(p, a) {
+        const c = Math.cos(a), s = Math.sin(a);
+        return [p[0]*c - p[1]*s, p[0]*s + p[1]*c, p[2]];
+      }
+
+      // Shape generators
+      function cubeVerts(s) {
+        const h = s/2;
+        return [[-h,-h,-h],[h,-h,-h],[h,h,-h],[-h,h,-h],[-h,-h,h],[h,-h,h],[h,h,h],[-h,h,h]];
+      }
+      function cubeEdges() {
+        return [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+      }
+      function octaVerts(s) {
+        return [[s,0,0],[-s,0,0],[0,s,0],[0,-s,0],[0,0,s],[0,0,-s]];
+      }
+      function octaEdges() {
+        return [[0,2],[0,3],[0,4],[0,5],[1,2],[1,3],[1,4],[1,5],[2,4],[2,5],[3,4],[3,5]];
+      }
+      function icoVerts(s) {
+        const t = (1 + Math.sqrt(5)) / 2;
+        const n = s / Math.sqrt(1 + t*t);
+        return [
+          [-n,t*n,0],[n,t*n,0],[n,-t*n,0],[-n,-t*n,0],
+          [0,-n,t*n],[0,n,t*n],[0,n,-t*n],[0,-n,-t*n],
+          [t*n,0,-n],[t*n,0,n],[-t*n,0,n],[-t*n,0,-n]
+        ];
+      }
+      function icoEdges() {
+        return [
+          [0,1],[0,5],[0,6],[0,10],[0,11],[1,5],[1,6],[1,8],[1,9],
+          [2,3],[2,4],[2,7],[2,8],[2,9],[3,4],[3,7],[3,10],[3,11],
+          [4,5],[4,9],[4,10],[5,9],[5,10],[6,7],[6,8],[6,11],[7,8],[7,11],
+          [8,9],[10,11]
+        ];
+      }
+      function diamondVerts(s) {
+        const h = s * 0.6;
+        return [[0,s,0],[s*0.7,0,0],[0,0,s*0.7],[-s*0.7,0,0],[0,0,-s*0.7],[0,-h,0]];
+      }
+      function diamondEdges() {
+        return [[0,1],[0,2],[0,3],[0,4],[1,2],[2,3],[3,4],[4,1],[5,1],[5,2],[5,3],[5,4]];
+      }
+
+      const shapeTypes = [
+        { v: cubeVerts, e: cubeEdges },
+        { v: octaVerts, e: octaEdges },
+        { v: icoVerts, e: icoEdges },
+        { v: diamondVerts, e: diamondEdges }
+      ];
+
+      const colors = [
+        [56, 189, 248],   // cyan
+        [45, 212, 191],   // teal
+        [192, 132, 252],  // purple
+        [129, 140, 248],  // indigo
+        [52, 211, 153],   // emerald
+        [251, 113, 133],  // rose
+      ];
+
+      class Shape3D {
+        constructor() {
+          this.reset();
+        }
+        reset() {
+          const type = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
+          const size = 25 + Math.random() * 55;
+          this.verts = type.v(size);
+          this.edges = type.e();
+          this.x = Math.random() * W;
+          this.y = Math.random() * H;
+          this.z = 200 + Math.random() * 600;
+          this.vx = (Math.random() - 0.5) * 0.4;
+          this.vy = (Math.random() - 0.5) * 0.3;
+          this.vz = (Math.random() - 0.5) * 0.15;
+          this.rx = Math.random() * Math.PI * 2;
+          this.ry = Math.random() * Math.PI * 2;
+          this.rz = Math.random() * Math.PI * 2;
+          this.drx = (Math.random() - 0.5) * 0.012;
+          this.dry = (Math.random() - 0.5) * 0.015;
+          this.drz = (Math.random() - 0.5) * 0.008;
+          this.color = colors[Math.floor(Math.random() * colors.length)];
+          this.pulseOffset = Math.random() * Math.PI * 2;
+        }
+        update(t) {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.z += this.vz;
+          this.rx += this.drx;
+          this.ry += this.dry;
+          this.rz += this.drz;
+          // wrap
+          if (this.x < -100) this.x = W + 100;
+          if (this.x > W + 100) this.x = -100;
+          if (this.y < -100) this.y = H + 100;
+          if (this.y > H + 100) this.y = -100;
+          if (this.z < 100 || this.z > 900) this.vz *= -1;
+        }
+        draw(t) {
+          const fov = 500;
+          const pulse = 0.6 + 0.4 * Math.sin(t * 0.001 + this.pulseOffset);
+          const depthAlpha = Math.max(0.08, Math.min(0.55, 1 - (this.z - 200) / 700));
+          const alpha = depthAlpha * pulse;
+          const [r, g, b] = this.color;
+
+          const projected = this.verts.map(v => {
+            let p = rotateX(v, this.rx);
+            p = rotateY(p, this.ry);
+            p = rotateZ(p, this.rz);
+            const scale = fov / (fov + this.z);
+            return [this.x + p[0] * scale, this.y + p[1] * scale];
+          });
+
+          // Draw glow behind shape
+          const glowR = 30 + (1 - depthAlpha) * 20;
+          const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowR);
+          grd.addColorStop(0, `rgba(${r},${g},${b},${alpha * 0.25})`);
+          grd.addColorStop(1, `rgba(${r},${g},${b},0)`);
+          ctx.fillStyle = grd;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowR, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Draw edges
+          ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+          ctx.lineWidth = Math.max(0.5, 1.5 * depthAlpha);
+          ctx.shadowColor = `rgba(${r},${g},${b},${alpha * 0.5})`;
+          ctx.shadowBlur = 6;
+          for (const [a, b2] of this.edges) {
+            ctx.beginPath();
+            ctx.moveTo(projected[a][0], projected[a][1]);
+            ctx.lineTo(projected[b2][0], projected[b2][1]);
+            ctx.stroke();
+          }
+          ctx.shadowBlur = 0;
+
+          // Draw vertices as tiny dots
+          ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 1.2})`;
+          for (const [px, py] of projected) {
+            ctx.beginPath();
+            ctx.arc(px, py, 1.2 * depthAlpha + 0.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      const shapeCount = 18;
+      const shapes = [];
+      for (let i = 0; i < shapeCount; i++) shapes.push(new Shape3D());
+
+      function animateGeo(t) {
+        ctx.clearRect(0, 0, W, H);
+        // Sort back-to-front
+        shapes.sort((a, b) => b.z - a.z);
+        for (const s of shapes) {
+          s.update(t);
+          s.draw(t);
+        }
+        requestAnimationFrame(animateGeo);
+      }
+      requestAnimationFrame(animateGeo);
+    })();
+
+    /* ==========================================================================
+       1c. GLOWING DEPTH ORBS — Bioluminescent floating spheres
+       ========================================================================== */
+    (function initGlowOrbs() {
+      const canvas = document.getElementById('glow-orbs-canvas');
+      const ctx = canvas.getContext('2d');
+      let W, H;
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      const orbColors = [
+        [6, 182, 212],    // cyan-500
+        [59, 130, 246],   // blue-500
+        [139, 92, 246],   // violet-500
+        [16, 185, 129],   // emerald-500
+        [244, 63, 94],    // rose-500
+        [245, 158, 11],   // amber-500
+      ];
+
+      class Orb {
+        constructor() {
+          this.reset(true);
+        }
+        reset(init) {
+          this.x = Math.random() * W;
+          this.y = init ? Math.random() * H : -50;
+          this.baseR = 15 + Math.random() * 60;
+          this.r = this.baseR;
+          this.speed = 0.15 + Math.random() * 0.35;
+          this.drift = (Math.random() - 0.5) * 0.5;
+          this.wobbleAmp = 20 + Math.random() * 40;
+          this.wobbleFreq = 0.0005 + Math.random() * 0.001;
+          this.phase = Math.random() * Math.PI * 2;
+          this.breathFreq = 0.001 + Math.random() * 0.002;
+          this.breathPhase = Math.random() * Math.PI * 2;
+          const c = orbColors[Math.floor(Math.random() * orbColors.length)];
+          this.cr = c[0]; this.cg = c[1]; this.cb = c[2];
+          this.maxAlpha = 0.06 + Math.random() * 0.12;
+        }
+        update(t) {
+          this.y += this.speed;
+          this.x += this.drift + Math.sin(t * this.wobbleFreq + this.phase) * 0.3;
+          this.r = this.baseR * (0.85 + 0.15 * Math.sin(t * this.breathFreq + this.breathPhase));
+          if (this.y > H + this.r + 20) this.reset(false);
+          if (this.x < -this.r - 20) this.x = W + this.r;
+          if (this.x > W + this.r + 20) this.x = -this.r;
+        }
+        draw(t) {
+          const alpha = this.maxAlpha * (0.7 + 0.3 * Math.sin(t * this.breathFreq + this.breathPhase));
+          const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
+          grd.addColorStop(0, `rgba(${this.cr},${this.cg},${this.cb},${alpha * 2.5})`);
+          grd.addColorStop(0.3, `rgba(${this.cr},${this.cg},${this.cb},${alpha})`);
+          grd.addColorStop(1, `rgba(${this.cr},${this.cg},${this.cb},0)`);
+          ctx.fillStyle = grd;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      const orbCount = 14;
+      const orbs = [];
+      for (let i = 0; i < orbCount; i++) orbs.push(new Orb());
+
+      function animateOrbs(t) {
+        ctx.clearRect(0, 0, W, H);
+        for (const o of orbs) {
+          o.update(t);
+          o.draw(t);
+        }
+        requestAnimationFrame(animateOrbs);
+      }
+      requestAnimationFrame(animateOrbs);
+    })();
+
+    /* ==========================================================================
+       2. 2D INTERACTIVE PARTICLE CONSTELLATION OVERLAY
+       ========================================================================== */
+    (function initParticles() {
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      const particles = [];
+      const particleCount = 80;
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * 0.45;
+          this.vy = (Math.random() - 0.5) * 0.45;
+          this.radius = Math.random() * 1.5 + 0.8;
+          this.alpha = Math.random() * 0.5 + 0.2;
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.x < 0) this.x = width;
+          if (this.x > width) this.x = 0;
+          if (this.y < 0) this.y = height;
+          if (this.y > height) this.y = 0;
+        }
+
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(56, 189, 248, ${this.alpha})`;
+          ctx.fill();
+        }
+      }
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = 0; i < particles.length; i++) {
+          const p1 = particles[i];
+          p1.update();
+          p1.draw();
+
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 140) {
+              const alpha = (1 - dist / 140) * 0.2;
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = `rgba(45, 212, 191, ${alpha})`;
+              ctx.lineWidth = 0.75;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+    })();
+
+    /* ==========================================================================
+       3. 3D CARD PERSPECTIVE TILT ON MOUSE HOVER
+       ========================================================================== */
+    (function init3DTilt() {
+      const cards = document.querySelectorAll('.card-3d');
+
+      cards.forEach(card => {
+        card.addEventListener('mousemove', e => {
+          const rect = card.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width - 0.5;
+          const y = (e.clientY - rect.top) / rect.height - 0.5;
+          const rotX = -y * 12;
+          const rotY = x * 12;
+
+          card.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(8px)`;
+
+          const glare = card.querySelector('.card-glare');
+          if (glare) {
+            const glareX = ((x + 0.5) * 100);
+            const glareY = ((y + 0.5) * 100);
+            glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.12) 0%, transparent 65%)`;
+          }
+        });
+
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)`;
+          card.style.transition = 'transform 0.4s ease';
+        });
+
+        card.addEventListener('mouseenter', () => {
+          card.style.transition = 'none';
+        });
+      });
+    })();
+
+    /* ==========================================================================
+       4. INTERACTIVE CAPABILITIES ENGINE (TABS & PREVIEW RENDERING)
+       ========================================================================== */
+    const capabilityData = [
+      {
+        title: "1. Explainable Triage Engine",
+        subtitle: "Multi-dimensional scoring across 5 orthogonal axes with explainable justifications",
+        desc: "Unlike superficial keyword filters or black-box classifiers, CivicLens decomposes every complaint into five quantifiable dimensions. It parses complex contrastive clauses and local negation to eliminate critical false negatives.",
+        bullets: [
+          "5 Orthogonal Dimensions: Safety Risk, Service Disruption, Population Impact, Time Sensitivity, and Category Baseline.",
+          "Handles Contrastive Clauses: Evaluates compound statements ('Routine check, but water has flooded electrical vault' → CRITICAL).",
+          "Token-Window Negation: Correctly isolates negated risk keywords ('This is not an emergency, just inquiring' → LOW).",
+          "Explainable TriageResult: Generates composite score (0–100), primary urgency drivers, and confidence level."
+        ],
+        visualHTML: `
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan-bright); margin-bottom: 6px;">LIVE 5-AXIS RADAR EVALUATION</div>
+          <div class="axis-bar-wrap">
+            <div class="axis-bar-row"><span>Safety & Life Risk</span><span>0.95 / 1.0</span></div>
+            <div class="axis-bar-track"><div class="axis-bar-fill" style="width: 95%;"></div></div>
+            
+            <div class="axis-bar-row"><span>Service Disruption</span><span>0.88 / 1.0</span></div>
+            <div class="axis-bar-track"><div class="axis-bar-fill" style="width: 88%;"></div></div>
+            
+            <div class="axis-bar-row"><span>Affected Population</span><span>0.82 / 1.0</span></div>
+            <div class="axis-bar-track"><div class="axis-bar-fill" style="width: 82%;"></div></div>
+            
+            <div class="axis-bar-row"><span>Time & Environmental Sensitivity</span><span>0.90 / 1.0</span></div>
+            <div class="axis-bar-track"><div class="axis-bar-fill" style="width: 90%;"></div></div>
+            
+            <div class="axis-bar-row"><span>Category Severity Baseline</span><span>0.75 / 1.0</span></div>
+            <div class="axis-bar-track"><div class="axis-bar-fill" style="width: 75%;"></div></div>
+          </div>
+          <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted);">OUTCOME:</div>
+            <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+              <span class="priority-badge-critical">CRITICAL (Score: 89.4)</span>
+              <span class="confidence-badge">CONFIDENCE: HIGH</span>
+            </div>
+          </div>
+        `
+      },
+      {
+        title: "2. Duplicate & Incident Detection",
+        subtitle: "100% offline, privacy-preserving semantic clustering and incident star-schema groups",
+        desc: "When infrastructure fails, dozens of citizens submit distinct descriptions for the exact same event. CivicLens merges Jaccard lexical overlap, TF-IDF cosine distance, and asymmetric containment to link incidents without cloud leakage.",
+        bullets: [
+          "Hybrid Mathematical Scoring: Jaccard token overlap + TF-IDF cosine vector distance + Containment ratio.",
+          "Context-Aware Morphological Stemming: Standardizes civic terminology and inflectional variants locally.",
+          "Star-Schema Incident Groups: Merges related complaints into `incident_groups` while preserving individual citizen ticket IDs.",
+          "Zero Cloud Data Leakage: Complete local mathematical processing guarantees citizen privacy."
+        ],
+        visualHTML: `
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--teal-bright); margin-bottom: 6px;">INCIDENT CLUSTERING STAR-SCHEMA</div>
+          <div style="padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(45,212,191,0.2);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-family: var(--font-mono); color: #ffffff;">
+              <span>GROUP #INC-2026-04</span>
+              <span style="color: var(--emerald-bright);">SCORE: 0.697 (HIGH_PROB)</span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 6px;">
+              Root Event: Water Main Rupture at 5th & Elm
+            </div>
+            <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 5px;">
+              <div class="visual-pill"><span style="color: #cbd5e1;">Member #CL-1049:</span> "Flooding on sidewalk 5th Ave"</div>
+              <div class="visual-pill"><span style="color: #cbd5e1;">Member #CL-1052:</span> "Water gushing into basement near Elm"</div>
+              <div class="visual-pill"><span style="color: #cbd5e1;">Member #CL-1061:</span> "Loss of water pressure block 400"</div>
+            </div>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); margin-top: 6px;">
+            Empirical Test: 12/12 Pairs Verified • Precision: 100% • Recall: 100%
+          </div>
+        `
+      },
+      {
+        title: "3. SLA Policy Engine & Escalation",
+        subtitle: "Deterministic 6-state progression with idempotent background scanners and downtime catch-up",
+        desc: "Service Level Agreements in CivicLens are hard operational contracts. Configurable category deadlines progress through 6 deterministic states. Recurring scanner executions never trigger duplicate alert spam.",
+        bullets: [
+          "Category-Specific Deadlines: Infrastructure Critical = 2h; Public Health = 3h; General Inquiry = 72h.",
+          "6 Deterministic States: ON_TRACK → APPROACHING_DEADLINE → OVERDUE → ESCALATED → PAUSED → COMPLETED.",
+          "Idempotent Escalation: Running the scanner 50 times produces exactly one verified escalation record.",
+          "Downtime Reconciliation: Automatically sweeps for missed deadlines upon server startup."
+        ],
+        visualHTML: `
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--amber-bright); margin-bottom: 6px;">SLA DETERMINISTIC STATE FLOW</div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="padding: 8px 12px; background: rgba(16,185,129,0.15); border-left: 3px solid var(--emerald-bright); border-radius: 4px; font-family: var(--font-mono); font-size: 0.75rem;">
+              1. ON_TRACK <span style="color: var(--text-muted); font-size: 0.68rem;">(0 - 75% elapsed window)</span>
+            </div>
+            <div style="padding: 8px 12px; background: rgba(251,191,36,0.15); border-left: 3px solid var(--amber-bright); border-radius: 4px; font-family: var(--font-mono); font-size: 0.75rem;">
+              2. APPROACHING_DEADLINE <span style="color: var(--text-muted); font-size: 0.68rem;">(&gt;75% warning flag)</span>
+            </div>
+            <div style="padding: 8px 12px; background: rgba(244,63,94,0.15); border-left: 3px solid var(--rose-bright); border-radius: 4px; font-family: var(--font-mono); font-size: 0.75rem;">
+              3. OVERDUE <span style="color: var(--text-muted); font-size: 0.68rem;">(Deadline expired)</span>
+            </div>
+            <div style="padding: 8px 12px; background: rgba(192,132,252,0.15); border-left: 3px solid var(--purple-bright); border-radius: 4px; font-family: var(--font-mono); font-size: 0.75rem;">
+              4. ESCALATED <span style="color: var(--text-muted); font-size: 0.68rem;">(Manager alerted • Idempotent logged)</span>
+            </div>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--emerald-bright); margin-top: 6px;">
+            ✓ SlaEngineIntegrationTest: 19/19 Test Verifications Passed
+          </div>
+        `
+      },
+      {
+        title: "4. Lifecycle State Machine",
+        subtitle: "Strict 7-state transitions, mandatory evidence records, and citizen ownership appeals",
+        desc: "Tickets cannot be arbitrarily closed with empty remarks. Transitioning to RESOLVED requires mandatory structured evidence (action taken, resolving staff ID, category). Citizens hold authenticated appeal privileges.",
+        bullets: [
+          "Strict 7 States: SUBMITTED → ASSIGNED → IN_PROGRESS → RESOLVED → CLOSED (with REJECTED, APPEALED).",
+          "Mandatory Evidence Records: Resolving staff must submit structured action logs before ticket closure.",
+          "Complainant Rating & Feedback: 1–5 star ratings recorded directly into operational quality KPIs.",
+          "Authenticated Citizen Appeals: Reopens unresolved issues with ownership authorization guards."
+        ],
+        visualHTML: `
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--purple-bright); margin-bottom: 6px;">MANDATORY RESOLUTION RECORD SCHEMA</div>
+          <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; font-family: var(--font-mono); font-size: 0.72rem; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="color: var(--teal-bright);">RESOLUTION METADATA:</div>
+            <div style="margin-top: 4px; color: #cbd5e1;">• action_taken: "Replaced 60A breaker, pumped cellar"</div>
+            <div style="color: #cbd5e1;">• resolution_category: "PHYSICAL_REPAIR"</div>
+            <div style="color: #cbd5e1;">• resolving_staff_id: 104 (Verified Employee)</div>
+            <div style="color: #cbd5e1;">• evidence_notes: "Inspected at 14:15, zero hazard"</div>
+            <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); color: var(--emerald-bright);">
+              CITIZEN APPEAL PRIVILEGE: ACTIVE (48h WINDOW)
+            </div>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--emerald-bright); margin-top: 6px;">
+            ✓ LifecycleIntegrationTest: 17/17 Transition Gates Passed
+          </div>
+        `
+      },
+      {
+        title: "5. Audit Trail & Outcome Analytics",
+        subtitle: "Append-only immutable event log, division-safe metrics, and genuine median calculations",
+        desc: "CivicLens maintains an unalterable history of every interaction. In analytics, it rejects naive averages that mask long-tail delays, replacing them with genuine median calculations and zero-division safe KPIs.",
+        bullets: [
+          "Append-Only Audit Log: `complaint_audit_log` records complaint ID, old state, new state, user ID, and timestamp.",
+          "Zero-Division Safety: All analytics queries handle empty tables or zero resolutions without NaN or crashes.",
+          "Genuine Median Calculation: Computes true median resolution hours resistant to outlier distortions.",
+          "Role-Filtered Dashboards: Administrative executive summaries partitioned from citizen portals."
+        ],
+        visualHTML: `
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan-bright); margin-bottom: 6px;">OUTCOME KPI DASHBOARD ENGINE</div>
+          <div class="visual-pill-grid">
+            <div class="visual-pill">
+              <span>RESOLUTION RATE</span>
+              <span class="val" style="color: var(--emerald-bright);">94.8%</span>
+            </div>
+            <div class="visual-pill">
+              <span>SLA COMPLIANCE</span>
+              <span class="val" style="color: var(--teal-bright);">96.2%</span>
+            </div>
+            <div class="visual-pill">
+              <span>GENUINE MEDIAN</span>
+              <span class="val" style="color: var(--cyan-bright);">3.4 hrs</span>
+            </div>
+            <div class="visual-pill">
+              <span>AUDIT INTEGRITY</span>
+              <span class="val" style="color: var(--purple-bright);">100% IMMUTABLE</span>
+            </div>
+          </div>
+          <div style="margin-top: 10px; font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); background: rgba(0,0,0,0.25); padding: 8px; border-radius: 6px;">
+            AUDIT ENTRY #9948: STATE: IN_PROGRESS → RESOLVED | ACTOR: Emp#104 | TIMESTAMP: 2026-10-15T18:42:01Z
+          </div>
+        `
+      }
+    ];
+
+    function switchCapabilityTab(index) {
+      const data = capabilityData[index];
+      const tabs = document.querySelectorAll('.cap-tab-btn');
+      tabs.forEach((tab, i) => {
+        if (i === index) tab.classList.add('active');
+        else tab.classList.remove('active');
+      });
+
+      const textCol = document.getElementById('cap-text-content');
+      const visualCol = document.getElementById('cap-visual-content');
+
+      textCol.innerHTML = `
+        <h3>${data.title}</h3>
+        <p style="font-size: 0.88rem; color: var(--teal-bright); font-family: var(--font-mono); margin-bottom: 10px;">${data.subtitle}</p>
+        <p>${data.desc}</p>
+        <div class="cap-feature-bullets">
+          ${data.bullets.map(b => `
+            <div class="cap-bullet">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>${b}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      visualCol.innerHTML = data.visualHTML;
+    }
+
+    // Initialize with tab 0
+    switchCapabilityTab(0);
+
+    /* ==========================================================================
+       5. ARCHITECTURE LAYER INTERACTION
+       ========================================================================== */
+    function highlightArchLayer(layer) {
+      console.log('Inspecting Architecture Layer:', layer);
+    }
+
+    /* ==========================================================================
+       6. INTERSECTION OBSERVER FOR SCROLL ANIMATIONS & COUNTERS
+       ========================================================================== */
+    const observerOptions = {
+      root: document.getElementById('presentation-container'),
+      threshold: 0.25
+    };
+
+    const animateObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+
+          // If Section 6 is intersecting, trigger counter animations
+          if (entry.target.id === 'slide-5') {
+            triggerBenchmarkCounters();
+            triggerBenchmarkBars();
+          }
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.animate-on-scroll, section.slide').forEach(el => {
+      animateObserver.observe(el);
+    });
+
+    let countersTriggered = false;
+    function triggerBenchmarkCounters() {
+      if (countersTriggered) return;
+      countersTriggered = true;
+
+      const counters = document.querySelectorAll('.counter-val');
+      counters.forEach(counter => {
+        const target = parseFloat(counter.getAttribute('data-target'));
+        const decimals = parseInt(counter.getAttribute('data-decimals') || '0');
+        const suffix = counter.getAttribute('data-suffix') || '';
+        const prefix = counter.getAttribute('data-prefix') || '';
+        
+        let startVal = target === 0 ? 13 : (target === 100 ? 33.93 : 0.1617);
+        const duration = 1800; // ms
+        const startTime = performance.now();
+
+        function update(currentTime) {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          // Ease out cubic
+          const easeProgress = 1 - Math.pow(1 - progress, 3);
+          
+          let currentVal;
+          if (target === 0) {
+            currentVal = Math.round(startVal * (1 - easeProgress));
+          } else {
+            currentVal = startVal + (target - startVal) * easeProgress;
+          }
+
+          counter.innerText = prefix + currentVal.toFixed(decimals) + suffix;
+
+          if (progress < 1) {
+            requestAnimationFrame(update);
+          } else {
+            counter.innerText = prefix + target.toFixed(decimals) + suffix;
+          }
+        }
+        requestAnimationFrame(update);
+      });
+    }
+
+    function triggerBenchmarkBars() {
+      const bars = document.querySelectorAll('.bar-inner-civic, .bar-inner-base');
+      bars.forEach(bar => {
+        const pct = bar.getAttribute('data-pct');
+        setTimeout(() => {
+          bar.style.width = pct + '%';
+        }, 150);
+      });
+    }
+
+    /* ==========================================================================
+       7. SLIDE NAVIGATION & SCROLL TRACKING
+       ========================================================================== */
+    const container = document.getElementById('presentation-container');
+    const slides = document.querySelectorAll('section.slide');
+    const dots = document.querySelectorAll('.nav-dot');
+    const progressBar = document.getElementById('progress-bar');
+    const slideNumPill = document.getElementById('slide-num-pill');
+    let currentSlide = 0;
+    let isScrolling = false;
+
+    function scrollToSlide(index) {
+      if (index < 0 || index >= slides.length) return;
+      currentSlide = index;
+      slides[index].scrollIntoView({ behavior: 'smooth' });
+      updateNavState(index);
+    }
+
+    function nextSlide() {
+      if (currentSlide < slides.length - 1) {
+        scrollToSlide(currentSlide + 1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        scrollToSlide(currentSlide - 1);
+      }
+    }
+
+    function updateNavState(index) {
+      dots.forEach((dot, i) => {
+        if (i === index) dot.classList.add('active');
+        else dot.classList.remove('active');
+      });
+      slideNumPill.innerText = `${index + 1} / ${slides.length}`;
+    }
+
+    // Scroll progress handler
+    container.addEventListener('scroll', () => {
+      const scrollTop = container.scrollTop;
+      const scrollHeight = container.scrollHeight - container.clientHeight;
+      const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+      progressBar.style.width = `${progress}%`;
+
+      // Determine active slide based on scroll offset
+      const viewHeight = window.innerHeight;
+      const activeIdx = Math.round(scrollTop / viewHeight);
+      if (activeIdx !== currentSlide && activeIdx >= 0 && activeIdx < slides.length) {
+        currentSlide = activeIdx;
+        updateNavState(currentSlide);
+      }
+    });
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      // Ignore if inside an input or editable field
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+      if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        scrollToSlide(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        scrollToSlide(slides.length - 1);
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      }
+    });
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn('Fullscreen error:', err);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Initial check
+    updateNavState(0);
+  </script>
+</body>
+</html>

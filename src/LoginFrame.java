@@ -82,33 +82,42 @@ registerButton.addActionListener(e -> {
                         BCrypt.checkpw(password, storedHash)) {
 
                         
-int userId = result.getInt("user_id");
-String name = result.getString("full_name");
-String userEmail = result.getString("email");
-String role = result.getString("role");
+                        int userId = result.getInt("user_id");
+                        String name = result.getString("full_name");
+                        String userEmail = result.getString("email");
+                        String role = result.getString("role");
 
-JOptionPane.showMessageDialog(
-    this,
-    "Login successful!\nWelcome, " + name
-);
+                        UserSession.Role roleEnum = UserSession.Role.fromString(role);
+                        if (roleEnum == null) {
+                            JOptionPane.showMessageDialog(this, "Unknown user role: " + role, "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
 
-if ("ADMIN".equals(role)) {
-    AdminDashboardFrame adminDashboard =
-        new AdminDashboardFrame();
-    adminDashboard.setVisible(true);
+                        UserSession session = new UserSession(userId, name, userEmail, roleEnum);
+                        UserSession.setCurrentSession(session);
 
-} else if ("EMPLOYEE".equals(role)) {
-    EmployeeDashboardFrame employeeDashboard =
-        new EmployeeDashboardFrame(userId, name);
-    employeeDashboard.setVisible(true);
+                        JOptionPane.showMessageDialog(
+                            this,
+                            "Login successful!\nWelcome, " + name
+                        );
 
-} else {
-    DashboardFrame dashboard =
-        new DashboardFrame(userId, name, userEmail, role);
-    dashboard.setVisible(true);
-}
+                        if (session.isAdmin()) {
+                            AdminDashboardFrame adminDashboard =
+                                new AdminDashboardFrame(session);
+                            adminDashboard.setVisible(true);
 
-dispose();
+                        } else if (session.isEmployee()) {
+                            EmployeeDashboardFrame employeeDashboard =
+                                new EmployeeDashboardFrame(session);
+                            employeeDashboard.setVisible(true);
+
+                        } else {
+                            DashboardFrame dashboard =
+                                new DashboardFrame(session);
+                            dashboard.setVisible(true);
+                        }
+
+                        dispose();
 
                     } else {
                         JOptionPane.showMessageDialog(

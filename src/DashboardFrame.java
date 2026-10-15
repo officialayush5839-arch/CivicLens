@@ -8,17 +8,17 @@ public class DashboardFrame extends JFrame {
     private final String fullName;
     private final String email;
     private final String role;
+    private final UserSession session;
 
-    public DashboardFrame(
-            int userId,
-            String fullName,
-            String email,
-            String role) {
-
-        this.userId = userId;
-        this.fullName = fullName;
-        this.email = email;
-        this.role = role;
+    public DashboardFrame(UserSession session) {
+        if (session == null || !session.isCitizen()) {
+            throw new SecurityException("Access Denied: Citizen role required to access Citizen Dashboard.");
+        }
+        this.session = session;
+        this.userId = session.getUserId();
+        this.fullName = session.getFullName();
+        this.email = session.getEmail();
+        this.role = session.getRole().name();
 
         setTitle("Smart Complaint System - Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -64,21 +64,19 @@ public class DashboardFrame extends JFrame {
         mainPanel.add(buttonPanel, BorderLayout.CENTER);
         mainPanel.add(footer, BorderLayout.SOUTH);
 
-       
-submitButton.addActionListener(e -> {
-    ComplaintFrame complaintFrame =
-        new ComplaintFrame(userId);
+        submitButton.addActionListener(e -> {
+            ComplaintFrame complaintFrame =
+                new ComplaintFrame(session);
 
-    complaintFrame.setVisible(true);
-});
-
+            complaintFrame.setVisible(true);
+        });
 
         viewButton.addActionListener(e -> {
-    MyComplaintsFrame complaintsFrame =
-        new MyComplaintsFrame(userId);
+            MyComplaintsFrame complaintsFrame =
+                new MyComplaintsFrame(session);
 
-    complaintsFrame.setVisible(true);
-});
+            complaintsFrame.setVisible(true);
+        });
 
         profileButton.addActionListener(e ->
             JOptionPane.showMessageDialog(
@@ -102,10 +100,31 @@ submitButton.addActionListener(e -> {
 
             if (choice == JOptionPane.YES_OPTION) {
                 dispose();
+                UserSession.clearCurrentSession();
                 new LoginFrame().setVisible(true);
             }
         });
 
         add(mainPanel);
+    }
+
+    public DashboardFrame(
+            int userId,
+            String fullName,
+            String email,
+            String role) {
+        this(resolveCitizenSession(userId, fullName, email, role));
+    }
+
+    private static UserSession resolveCitizenSession(int userId, String fullName, String email, String role) {
+        UserSession current = UserSession.getCurrentSession();
+        if (current != null && current.isCitizen() && current.getUserId() == userId) {
+            return current;
+        }
+        UserSession.Role r = UserSession.Role.fromString(role);
+        if (r == null) {
+            r = UserSession.Role.CITIZEN;
+        }
+        return new UserSession(userId, fullName, email, r);
     }
 }
